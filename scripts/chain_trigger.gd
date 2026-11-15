@@ -11,6 +11,7 @@ var is_activated: bool = false
 var linked_beams: Array[CuttableBeam] = []
 var linked_ramps: Array[Ramp] = []
 var linked_ramp_angles: Array[float] = []
+var linked_chains: Array[SteelChain] = []
 
 var _particles: CPUParticles2D
 var _anim_pulse: float = 0.0
@@ -53,6 +54,11 @@ func link_ramp_to_rotate(ramp: Ramp, new_angle_deg: float) -> void:
 		linked_ramp_angles.append(new_angle_deg)
 		queue_redraw()
 
+func link_chain_to_retract(chain: SteelChain) -> void:
+	if chain != null:
+		linked_chains.append(chain)
+		queue_redraw()
+
 func _on_body_entered(body: Node) -> void:
 	if is_activated:
 		return
@@ -79,6 +85,10 @@ func _on_body_entered(body: Node) -> void:
 		if r != null and is_instance_valid(r):
 			r.rotate_to_degrees(linked_ramp_angles[i], 0.20)
 
+	for ch in linked_chains:
+		if ch != null and is_instance_valid(ch) and not ch.is_retracted:
+			ch.retract_chain()
+
 	chain_activated.emit(self)
 	queue_redraw()
 
@@ -94,6 +104,9 @@ func _draw() -> void:
 	for r in linked_ramps:
 		if r != null and is_instance_valid(r):
 			draw_dashed_line(Vector2.ZERO, to_local(r.global_position), wire_col, 2.5, 8.0)
+	for ch in linked_chains:
+		if ch != null and is_instance_valid(ch):
+			draw_dashed_line(Vector2.ZERO, to_local(ch.global_position), wire_col, 2.5, 8.0)
 
 	var pulse_r := radius + sin(_anim_pulse) * 2.5
 	var ring_col := trigger_color if not is_activated else Color(0.5, 1.0, 0.6, 0.55)

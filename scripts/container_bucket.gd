@@ -231,7 +231,7 @@ func _draw() -> void:
 			20,
 			Color.WHITE
 		)
-		var cname := GameColors.get_color_name(color_type)
+		var cname := "%s %s" % [GameColors.get_color_symbol(color_type), GameColors.get_color_name(color_type)]
 		draw_string(
 			font,
 			Vector2(-hw, 28.0),

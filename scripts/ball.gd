@@ -4,6 +4,7 @@ extends RigidBody2D
 @export var color_type: GameColors.ColorType = GameColors.ColorType.RED:
 	set(value):
 		color_type = value
+		_update_collision_filter()
 		queue_redraw()
 
 @export var radius: float = 18.0:
@@ -15,11 +16,13 @@ extends RigidBody2D
 var is_collected: bool = false
 var is_heavy_striker: bool = false
 var _trail_points: Array[Vector2] = []
+var _dye_flash: float = 0.0
 const MAX_TRAIL_POINTS := 9
 
 var _collision_shape: CollisionShape2D
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_PAUSABLE
 	continuous_cd = RigidBody2D.CCD_MODE_DISABLED
 	contact_monitor = true
 	max_contacts_reported = 4
@@ -39,6 +42,23 @@ func _ready() -> void:
 
 	_ensure_collision_node()
 	_update_collision_shape()
+	_update_collision_filter()
+
+func _update_collision_filter() -> void:
+	var c_bit := GameColors.get_collision_bit(color_type)
+	# Layer: Bit 1 (1) so standard Area2D sensors (mask=1) detect balls + Bit 7 (64) for ball-to-ball + color bit
+	collision_layer = 1 | 64 | c_bit
+	# Mask: Bit 1 (1) WorldStatic + Bit 7 (64) other balls + own color gate bit
+	collision_mask = 1 | 64 | c_bit
+
+func transform_to_color(new_color: GameColors.ColorType) -> void:
+	if color_type == GameColors.ColorType.STEEL or is_heavy_striker:
+		return
+	if color_type == new_color:
+		return
+	color_type = new_color
+	_dye_flash = 1.0
+	queue_redraw()
 
 func _ensure_collision_node() -> void:
 	_collision_shape = get_node_or_null("CollisionShape2D")
@@ -55,9 +75,11 @@ func _update_collision_shape() -> void:
 		circle.radius = radius
 		_collision_shape.shape = circle
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
 	if is_collected:
 		return
+	if _dye_flash > 0.0:
+		_dye_flash = maxf(_dye_flash - delta * 3.5, 0.0)
 	if linear_velocity.length() > 35.0:
 		_trail_points.push_front(global_position)
 		if _trail_points.size() > MAX_TRAIL_POINTS:
@@ -70,6 +92,9 @@ func _draw() -> void:
 	var main_col := GameColors.get_main_color(color_type)
 	var dark_col := GameColors.get_dark_color(color_type)
 	var light_col := GameColors.get_light_color(color_type)
+
+	if _dye_flash > 0.0:
+		main_col = main_col.lerp(Color.WHITE, _dye_flash * 0.65)
 
 	# Draw motion trail in local coordinates
 	if _trail_points.size() > 1:
@@ -90,17 +115,9 @@ func _draw() -> void:
 	# Inner subtle glow
 	draw_circle(Vector2(-radius * 0.15, -radius * 0.15), radius * 0.62, main_col.lerp(light_col, 0.35))
 
-	# Subtle rotating emblem inside ball so rolling is visually clear
-	var emblem_col := Color(dark_col.r, dark_col.g, dark_col.b, 0.38)
-	if color_type == GameColors.ColorType.STEEL:
-		for a in range(4):
-			var ang := float(a) * PI * 0.5
-			var p := Vector2.from_angle(ang) * (radius * 0.55)
-			draw_circle(p, 3.0, dark_col)
-		draw_arc(Vector2.ZERO, radius * 0.45, 0.0, TAU, 20, light_col, 2.0, true)
-	else:
-		draw_arc(Vector2.ZERO, radius * 0.42, 0.3, PI - 0.3, 12, emblem_col, 2.2, true)
-		draw_arc(Vector2.ZERO, radius * 0.42, PI + 0.3, TAU - 0.3, 12, emblem_col, 2.2, true)
+	# Accessible colorblind geometric emblem inside ball
+	var emblem_col := Color(dark_col.r, dark_col.g, dark_col.b, 0.58)
+	GameColors.draw_color_emblem(self, Vector2.ZERO, radius, color_type, emblem_col)
 
 	# Specular highlight (kept near top-left in world space for 3D glossy look)
 	var shine_pos := Vector2(-radius * 0.32, -radius * 0.34).rotated(-rotation)
