@@ -1,0 +1,29 @@
+{
+  "captures": [
+    "corrected_gameplay_540x960.png",
+    "corrected_mastery_540x960.png",
+    "corrected_gameplay_720x1280.png",
+    "corrected_hints_720x1280.png",
+    "corrected_home_720x1280.png",
+    "corrected_levels_720x1280.png",
+    "corrected_pause_720x1280.png",
+    "corrected_settings_720x1280.png",
+    "corrected_trails_720x1280.png",
+    "corrected_win_720x1280.png",
+    "corrected_complete_100_720x1280.png",
+    "corrected_retry_720x1280.png",
+    "corrected_mastery_720x1280.png",
+    "corrected_gameplay_1080x1920.png",
+    "corrected_mastery_1080x1920.png",
+    "corrected_gameplay_540x1170.png",
+    "corrected_mastery_540x1170.png",
+    "corrected_gameplay_1080x2400.png",
+    "corrected_mastery_1080x2400.png",
+    "corrected_gameplay_768x1024.png",
+    "corrected_mastery_768x1024.png"
+  ],
+  "checks": 14535,
+  "engine": "4.7.2-stable (official)",
+  "failures": [],
+  "testing": "Desktop Godot renderer / automated viewport previews. No physical device or mobile emulator testing."
+}

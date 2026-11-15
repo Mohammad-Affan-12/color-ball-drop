@@ -48,6 +48,10 @@ func _run_tests() -> void:
 		return
 
 	# 7. Verify all 100 playable levels (pre-cut stability + solution completion)
+	if not await _verify_central_platform_behavior():
+		quit(1)
+		return
+
 	var total_levels := LevelData.TOTAL_LEVELS
 	for lvl in range(1, total_levels + 1):
 		var use_real_touch := (lvl <= 5 or lvl % 20 == 0)
@@ -420,3 +424,78 @@ func _dump_ball_positions(lc: LevelController) -> void:
 			c.required_count,
 			str(c.global_position)
 		])
+
+func _verify_central_platform_behavior() -> bool:
+	print("--- Testing Central V Platforms, Cut Supports & Trigger Wiring ---")
+	for level in [1, 3]:
+		_main_node.load_level(level)
+		await process_frame
+		await physics_frame
+		var lc: LevelController = _main_node.current_level
+		var center_ramps: Array[Ramp] = []
+		for ramp in lc.ramps:
+			if is_equal_approx(ramp.position.y, 555.0):
+				center_ramps.append(ramp)
+		if center_ramps.size() != 2:
+			printerr("FAIL: Expected both central platform halves on level %d" % level)
+			return false
+		for ramp in center_ramps:
+			if not ramp is StaticBody2D or ramp._main_col.disabled or ramp.collision_layer == 0:
+				printerr("FAIL: Central ramp has missing/disabled static collision")
+				return false
+			if ramp._main_col.shape.size != Vector2(220, 16):
+				printerr("FAIL: Central platform collision geometry changed")
+				return false
+			if not ramp._main_col.global_transform.is_equal_approx(ramp.global_transform):
+				printerr("FAIL: Collision transform does not follow ramp")
+				return false
+		for cuttable in lc.cuttables:
+			if not cuttable.cut_performed.is_connected(lc._on_cut_performed):
+				printerr("FAIL: Cut support signal disconnected")
+				return false
+			if cuttable is CuttableRope:
+				if not cuttable.attached_body.freeze or cuttable.attached_body.freeze_mode != RigidBody2D.FREEZE_MODE_KINEMATIC:
+					printerr("FAIL: Rope must hold its ball before cutting")
+					return false
+		if level == 1:
+			if not lc.triggers.is_empty():
+				printerr("FAIL: Level 1 return ramps must be stationary")
+				return false
+		else:
+			var trigger: ChainTrigger = lc.triggers[0]
+			if not trigger.body_entered.is_connected(trigger._on_body_entered) or not trigger.chain_activated.is_connected(lc._on_chain_activated):
+				printerr("FAIL: Trigger sensor or gameplay signal disconnected")
+				return false
+			if trigger.linked_ramps.size() != 2 or trigger.linked_beams.size() != 2:
+				printerr("FAIL: Trigger must rotate both central ramps and release both gates")
+				return false
+			if not is_equal_approx(center_ramps[0].rotation_degrees, 12) or not is_equal_approx(center_ramps[1].rotation_degrees, -12):
+				printerr("FAIL: Initial pivot angles changed")
+				return false
+		# Execute the existing solution with its original timing and real touch events.
+		if not await _verify_level_solvable(level, true):
+			return false
+		lc = _main_node.current_level
+		for ramp in lc.ramps:
+			if is_equal_approx(ramp.position.y, 555):
+				var target := -20.0 if ramp.position.x < 360 else 20.0
+				if not is_equal_approx(ramp.rotation_degrees, target):
+					printerr("FAIL: Central ramp did not reach/retain its intended angle")
+					return false
+				if not ramp._main_col.global_transform.is_equal_approx(ramp.global_transform):
+					printerr("FAIL: Rotated collision is out of sync")
+					return false
+		for cuttable in lc.cuttables:
+			if cuttable is CuttableBeam:
+				if not cuttable.is_cut or cuttable._body.collision_layer != 0 or not cuttable._col_shape.disabled:
+					printerr("FAIL: Cut gate collision was not removed")
+					return false
+			elif cuttable is CuttableRope and is_instance_valid(cuttable.attached_body):
+				if cuttable.attached_body.freeze and not cuttable.attached_body.is_collected:
+					printerr("FAIL: Cut rope left an uncollected ball frozen")
+					return false
+		if level == 3 and not lc.triggers[0].is_activated:
+			printerr("FAIL: Steel striker did not activate its trigger")
+			return false
+	print("  PASS: Level 1 V remains fixed; Level 3 pivots 12/-12 to -20/20; gate collisions release; both original solutions win.")
+	return true

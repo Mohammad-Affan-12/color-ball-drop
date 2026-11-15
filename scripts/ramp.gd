@@ -101,8 +101,8 @@ func _rebuild_shapes() -> void:
 func _draw() -> void:
 	var half := length * 0.5
 	var r := thickness * 0.5
-	var body := Color("34465b")
-	var edge := Color("6e8499").lerp(accent_color, 0.2)
+	var body := Color("3d526b")
+	var edge := Color("a3bbd0").lerp(accent_color, 0.22)
 	draw_line(Vector2(-half, 4), Vector2(half, 4), Color(0, 0, 0, 0.28), thickness + 3, true)
 	draw_circle(Vector2(-half, 0), r, body)
 	draw_circle(Vector2(half, 0), r, body)

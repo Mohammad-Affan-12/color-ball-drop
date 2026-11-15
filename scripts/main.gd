@@ -30,6 +30,8 @@ var _base_camera_offset: Vector2 = Vector2.ZERO
 var _bonus_claimed_this_win: bool = false
 var save_path: String = SaveManager.DEFAULT_SAVE_PATH
 var _menu_was_open: bool = false
+var _puzzle_bounds := Rect2(0, 140, 720, 1040)
+var _framing_queued: bool = false
 var _ui_layer: CanvasLayer
 var _hud: GameplayHud
 var _results_modal: ResultsModal
@@ -94,6 +96,7 @@ func _build_ui() -> void:
 	add_child(_ui_layer)
 
 	_hud = GameplayHud.new()
+	_hud.layout_changed.connect(_queue_puzzle_framing)
 	_hud.build(_ui_layer, open_home_screen, _on_hint_pressed, _on_restart_pressed, toggle_pause, open_level_select, func(lvl_idx: int) -> void:
 		sfx.play("ui_click"); is_daily_challenge_mode = false; load_level(lvl_idx)
 	)
@@ -150,17 +153,26 @@ func _update_viewport_layout() -> void:
 	if vp_size.x <= 0.0 or vp_size.y <= 0.0:
 		return
 	var insets := MobileLayout.safe_insets(get_viewport())
-	var framing := MobileLayout.puzzle_transform(vp_size, insets)
-	_camera.zoom = Vector2.ONE * framing.x.x
-	_base_camera_offset = -framing.origin / framing.x.x
-	_camera.offset = _base_camera_offset
-	_camera.force_update_scroll()
 	if _hud != null:
 		_hud.layout(insets)
+	_update_puzzle_framing()
 
 	for modal_panel in [_results_modal.panel, _pause_modal.panel, _home_modal.panel, _level_select_modal.panel, _cosmetics_modal.panel, _settings_modal.panel]:
 		if modal_panel != null:
 			MobileLayout.fit_modal(modal_panel, vp_size, insets)
+
+func _queue_puzzle_framing() -> void:
+	if not _framing_queued:
+		_framing_queued = true
+		_update_puzzle_framing.call_deferred()
+
+func _update_puzzle_framing() -> void:
+	_framing_queued = false
+	var framing := MobileLayout.puzzle_transform(_puzzle_bounds, _hud.puzzle_area())
+	_camera.zoom = Vector2.ONE * framing.x.x
+	_base_camera_offset = -framing.origin / framing.x.x
+	_camera.offset = _base_camera_offset
+	_camera.force_update_scroll()
 
 func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 	var target_idx := clampi(level_idx, 1, LevelData.TOTAL_LEVELS)
@@ -208,6 +220,9 @@ func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 		_hud.subtitle_label.text = current_level.tutorial_tip
 	_hud.update_moves_display(current_level.moves_used, current_level.par_moves)
 	_hud.set_hint_active(_hints_active)
+	_puzzle_bounds = MobileLayout.measure_level(current_level)
+	_queue_puzzle_framing()
+	queue_redraw()
 
 func _on_object_sliced(item: CuttableBase, _pt: Vector2, _cuts_in_swipe: int = 1) -> void:
 	sfx.play("slice_rope" if item is CuttableRope else "slice_beam", randf_range(0.95, 1.08))
@@ -389,31 +404,21 @@ func _on_reset_progress_pressed() -> void:
 
 func _on_toggle_sfx_pressed() -> void:
 	sfx.muted = not sfx.muted
-	if save_manager != null:
-		save_manager.sfx_muted = sfx.muted
-		save_manager.save_data()
-	if not sfx.muted:
-		sfx.play("ui_click")
-	_pause_modal.refresh(sfx, slice_controller)
-	_settings_modal.refresh(sfx, slice_controller, save_manager)
+	if save_manager != null: save_manager.sfx_muted = sfx.muted; save_manager.save_data()
+	if not sfx.muted: sfx.play("ui_click")
+	_pause_modal.refresh(sfx, slice_controller); _settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_music_pressed() -> void:
 	sfx.music_muted = not sfx.music_muted
-	if save_manager != null:
-		save_manager.music_muted = sfx.music_muted
-		save_manager.save_data()
+	if save_manager != null: save_manager.music_muted = sfx.music_muted; save_manager.save_data()
 	sfx.play("ui_click")
-	_pause_modal.refresh(sfx, slice_controller)
-	_settings_modal.refresh(sfx, slice_controller, save_manager)
+	_pause_modal.refresh(sfx, slice_controller); _settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_haptics_pressed() -> void:
 	slice_controller.vibration_enabled = not slice_controller.vibration_enabled
-	if save_manager != null:
-		save_manager.vibration_enabled = slice_controller.vibration_enabled
-		save_manager.save_data()
+	if save_manager != null: save_manager.vibration_enabled = slice_controller.vibration_enabled; save_manager.save_data()
 	sfx.play("ui_click")
-	_pause_modal.refresh(sfx, slice_controller)
-	_settings_modal.refresh(sfx, slice_controller, save_manager)
+	_pause_modal.refresh(sfx, slice_controller); _settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_colorblind_pressed() -> void:
 	if save_manager == null:
@@ -490,7 +495,7 @@ func _draw() -> void:
 	plate.border_color = Color("22394f")
 	plate.set_border_width_all(1)
 	plate.set_corner_radius_all(30)
-	draw_style_box(plate, Rect2(22, 142, 676, 1032))
+	draw_style_box(plate, _puzzle_bounds)
 	for x in range(60, 700, 40):
-		for y in range(180, 1150, 40):
+		for y in range(int(_puzzle_bounds.position.y) + 24, int(_puzzle_bounds.end.y) - 20, 40):
 			draw_circle(Vector2(x, y), 1.2, Color(0.42, 0.58, 0.68, 0.1))

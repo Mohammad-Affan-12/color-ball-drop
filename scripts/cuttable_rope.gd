@@ -76,6 +76,8 @@ func perform_cut(world_point: Vector2, _swipe_dir: Vector2 = Vector2.RIGHT) -> v
 	if attached_body != null and is_instance_valid(attached_body):
 		attached_body.freeze = false
 		attached_body.sleeping = false
+		attached_body.linear_velocity = Vector2.ZERO
+		attached_body.angular_velocity = 0.0
 		if release_impulse.length_squared() > 0.01:
 			attached_body.apply_central_impulse(release_impulse)
 	super.perform_cut(world_point, _swipe_dir)
@@ -104,7 +106,7 @@ func _draw() -> void:
 		var end_local := to_local(get_end_global())
 		draw_line(Vector2(2, 2), end_local + Vector2(2, 2), Color(0.0, 0.0, 0.0, 0.28), 8.0, true)
 		draw_line(Vector2.ZERO, end_local, rope_dark, 8.5, true)
-		draw_line(Vector2.ZERO, end_local, rope_main, 5.0, true)
+		draw_line(Vector2.ZERO, end_local, rope_main, 6.0, true)
 
 		var dist := end_local.length()
 		var dir := end_local.normalized()

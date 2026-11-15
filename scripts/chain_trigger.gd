@@ -71,6 +71,8 @@ func _on_body_entered(body: Node) -> void:
 	if consume_striker_ball and (body as PuzzleBall).color_type == GameColors.ColorType.STEEL:
 		var ball := body as PuzzleBall
 		ball.is_collected = true
+		ball.collision_layer = 0
+		ball.collision_mask = 0
 		ball.set_deferred("freeze", true)
 		var tw := create_tween()
 		tw.tween_property(ball, "scale", Vector2(0.1, 0.1), 0.15)

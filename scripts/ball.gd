@@ -93,11 +93,13 @@ func _draw() -> void:
 	var dark := GameColors.get_dark_color(color_type)
 	var light := GameColors.get_light_color(color_type)
 	main = main.lerp(Color.WHITE, _dye_flash * 0.65)
+	# Visual rim only; radius and collision shape retain their original values.
+	draw_circle(Vector2.ZERO, radius + 3.0, Color(light, 0.18))
 	for i in range(_trail_points.size()):
 		var fade := 1.0 - float(i) / float(_trail_points.size())
 		draw_circle(to_local(_trail_points[i]), radius * fade * 0.7, Color(main, fade * 0.18))
 	draw_circle(Vector2(1, 4).rotated(-rotation), radius + 1, Color(0, 0, 0, 0.32))
-	draw_circle(Vector2.ZERO, radius, dark.darkened(0.2))
+	draw_circle(Vector2.ZERO, radius, light.lerp(dark, 0.55))
 	# Small layered discs create a soft enamel gradient without textures.
 	for step in range(10):
 		var t := float(step) / 9.0

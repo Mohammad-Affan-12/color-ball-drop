@@ -68,6 +68,3 @@ func _draw() -> void:
 	draw_dashed_line(start, end, Color(0.45, 0.91, 0.80, 0.5), 2, 8)
 	draw_circle(finger, 12, Color(0.45, 0.91, 0.80, alpha * 0.25))
 	draw_circle(finger, 6, Color(1, 1, 1, alpha * 0.9))
-	var text_style := UiThemeHelper.create_pill_style(Color("172b42"), Color("486557"))
-	draw_style_box(text_style, Rect2(160, 218, 400, 48))
-	draw_string(ThemeDB.fallback_font, Vector2(160, 251), "Swipe across gold to cut", HORIZONTAL_ALIGNMENT_CENTER, 400, 26, UiThemeHelper.GOLD)

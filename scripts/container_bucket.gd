@@ -133,6 +133,8 @@ func _on_body_entered(body: Node) -> void:
 		wrong_ball_entered.emit(self, ball)
 
 func _absorb_ball(ball: PuzzleBall) -> void:
+	ball.collision_layer = 0
+	ball.collision_mask = 0
 	ball.set_deferred("freeze", true)
 	var tw := create_tween()
 	tw.set_parallel(true)
@@ -180,8 +182,9 @@ func _draw() -> void:
 	var arrow := Vector2(0, -hh - 14)
 	draw_polyline(PackedVector2Array([arrow + Vector2(-7, -5), arrow, arrow + Vector2(7, -5)]), light, 2, true)
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(-hw, 8), "%d / %d" % [collected_count, required_count], HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 30, UiThemeHelper.TEXT)
-	GameColors.draw_color_emblem(self, Vector2(0, -23), 19, color_type, light)
-	draw_string(font, Vector2(-hw, hh + 39), GameColors.get_color_name(color_type), HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 24, light)
+	draw_string(font, Vector2(-hw, 10), "%d / %d" % [collected_count, required_count], HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 32, UiThemeHelper.TEXT)
+	if not is_satisfied():
+		GameColors.draw_color_emblem(self, Vector2(0, -23), 19, color_type, light)
+	draw_string(font, Vector2(-hw, hh + 39), GameColors.get_color_name(color_type), HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 28, light)
 	if is_satisfied():
 		draw_polyline(PackedVector2Array([Vector2(-8, -20), Vector2(-2, -14), Vector2(10, -28)]), UiThemeHelper.TEAL, 3, true)

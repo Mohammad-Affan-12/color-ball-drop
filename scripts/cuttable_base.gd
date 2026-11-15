@@ -57,8 +57,11 @@ func draw_cut_cue(center_pos: Vector2, normal_dir: Vector2, half_span: float) ->
 func draw_hint_badge(local_pos: Vector2) -> void:
 	if not show_hint or is_cut:
 		return
+	# Keep order numbers upright even when the supporting beam is rotated.
+	draw_set_transform(local_pos, -global_rotation, Vector2.ONE)
+	local_pos = Vector2.ZERO
 	var is_trap := (hint_label == "✖")
-	var r := 17.0 + sin(_hint_pulse) * 2.5
+	var r := 23.0 + sin(_hint_pulse) * 1.5
 	var ring_col := Color(1.0, 0.36, 0.36) if is_trap else Color(1.0, 0.88, 0.25)
 	draw_circle(local_pos, r + 3.5, Color(ring_col.r, ring_col.g, ring_col.b, 0.32))
 	draw_circle(local_pos, r, Color(0.09, 0.13, 0.22, 0.95))
@@ -66,4 +69,5 @@ func draw_hint_badge(local_pos: Vector2) -> void:
 	var font := ThemeDB.fallback_font
 	if font != null:
 		var text := hint_label if not hint_label.is_empty() else (str(hint_order) if hint_order > 0 else "✂")
-		draw_string(font, local_pos + Vector2(-r, 6.0), text, HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, 15, ring_col.lightened(0.25))
+		draw_string(font, local_pos + Vector2(-r, 9.0), text, HORIZONTAL_ALIGNMENT_CENTER, r * 2.0, 26, ring_col.lightened(0.25))
+	draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)
