@@ -2,6 +2,8 @@
 
 ## 1. Google Play Store Listing (US & Australia Primary Markets)
 
+> Historical planning document. Current worldwide copy/assets are in `marketing/STORE_LISTING.md`; actual implemented monetization, privacy and verification status are in `docs/RELEASE_READINESS.md`. Treat prior mock-service, pricing and API assumptions below as superseded where they conflict.
+
 ### Title Options (Max 30 Characters)
 1. **Cut & Cascade: Color Puzzle** *(27 chars — Recommended)*
 2. **Cut & Cascade: Physics Drop** *(27 chars)*

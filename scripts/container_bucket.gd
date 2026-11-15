@@ -18,6 +18,7 @@ signal wrong_ball_entered(container: ColorContainer, ball: PuzzleBall)
 @export var bucket_height: float = 92.0
 
 var collected_count: int = 0
+var show_color_symbol := true
 var _display_fill: float = 0.0
 var _pulse: float = 0.0
 var _error_flash: float = 0.0
@@ -144,8 +145,12 @@ func _absorb_ball(ball: PuzzleBall) -> void:
 	tw.chain().tween_callback(ball.queue_free)
 
 func _process(delta: float) -> void:
-	_wave_time += delta * 4.5
 	var target_ratio := clampf(float(collected_count) / float(max(required_count, 1)), 0.0, 1.0)
+	if absf(_display_fill - target_ratio) < 0.001 and _pulse <= 0.0 and _error_flash <= 0.0:
+		if _display_fill != target_ratio:
+			_display_fill = target_ratio
+			queue_redraw()
+		return
 	_display_fill = lerpf(_display_fill, target_ratio, clampf(delta * 8.0, 0.0, 1.0))
 	if _pulse > 0.0:
 		_pulse = maxf(_pulse - delta * 3.5, 0.0)
@@ -183,7 +188,7 @@ func _draw() -> void:
 	draw_polyline(PackedVector2Array([arrow + Vector2(-7, -5), arrow, arrow + Vector2(7, -5)]), light, 2, true)
 	var font := ThemeDB.fallback_font
 	draw_string(font, Vector2(-hw, 10), "%d / %d" % [collected_count, required_count], HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 32, UiThemeHelper.TEXT)
-	if not is_satisfied():
+	if not is_satisfied() and show_color_symbol:
 		GameColors.draw_color_emblem(self, Vector2(0, -23), 19, color_type, light)
 	draw_string(font, Vector2(-hw, hh + 39), GameColors.get_color_name(color_type), HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 28, light)
 	if is_satisfied():

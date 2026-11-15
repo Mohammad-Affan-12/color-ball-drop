@@ -1,0 +1,2 @@
+# Remove /bin folder line if you want to commit
+# Pinned Android binaries are intentionally versioned for reproducible builds.

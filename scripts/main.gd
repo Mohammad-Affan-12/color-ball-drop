@@ -10,7 +10,7 @@ const LEVEL_SCENES := {
 
 const BASE_WIDTH: float = 720.0
 const BASE_HEIGHT: float = 1280.0
-const APP_VERSION: String = "1.0.0 (Commercial Build)"
+const APP_VERSION: String = "1.0.0"
 
 var current_level_index: int = 1
 var current_level: LevelController = null
@@ -40,6 +40,10 @@ var _home_modal: HomeModal
 var _level_select_modal: LevelSelectModal
 var _cosmetics_modal: CosmeticsModal
 var _settings_modal: SettingsModal
+var _privacy_modal: PrivacyModal
+var _external_presentation := false
+var _level_started_ms := 0
+var _attempts: Dictionary = {}
 var _modal_backdrop: ColorRect
 var _modal_header: Label
 var _modal_body: Label
@@ -53,12 +57,25 @@ func _ready() -> void:
 	add_child(_camera)
 
 	save_manager = SaveManager.new(save_path)
+	if not save_manager.locale_override.is_empty():
+		TranslationServer.set_locale(save_manager.locale_override)
 	analytics = AnalyticsService.new()
-	analytics.consent_granted = save_manager.privacy_consent_granted
+	analytics.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(analytics)
+	analytics.configure(save_manager.analytics_opt_in, save_path + ".analytics")
 	analytics.log_event("session_start", {"version": APP_VERSION})
 
 	ad_service = AdService.new()
-	ad_service.initialize(save_manager.privacy_consent_granted, save_manager.remove_ads_owned)
+	ad_service.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(ad_service)
+	ad_service.initialize(false, save_manager.remove_ads_owned)
+	ad_service.is_safe_break = func() -> bool: return _results_modal != null and (_results_modal.backdrop.visible or _menu_open())
+	ad_service.telemetry.connect(analytics.log_event)
+	ad_service.availability_changed.connect(_refresh_reward_availability)
+	ad_service.presentation_changed.connect(func(active: bool) -> void:
+		_external_presentation = active
+		_sync_menu_state()
+	)
 	billing_service = BillingService.new(save_manager)
 
 	sfx = SfxManager.new()
@@ -133,6 +150,8 @@ func _build_ui() -> void:
 		_on_toggle_colorblind_pressed, _on_toggle_particles_pressed, _on_toggle_consent_pressed,
 		_on_restore_purchases_pressed, _on_reset_progress_pressed, func() -> void: sfx.play("ui_click")
 	)
+	_privacy_modal = PrivacyModal.new()
+	_privacy_modal.build(_ui_layer, _on_analytics_choice_pressed, ad_service.open_privacy_options, _on_language_pressed, func() -> void: sfx.play("ui_click"))
 
 func _play_startup_splash() -> void:
 	var sb := _results_modal.splash_backdrop
@@ -157,7 +176,7 @@ func _update_viewport_layout() -> void:
 		_hud.layout(insets)
 	_update_puzzle_framing()
 
-	for modal_panel in [_results_modal.panel, _pause_modal.panel, _home_modal.panel, _level_select_modal.panel, _cosmetics_modal.panel, _settings_modal.panel]:
+	for modal_panel in [_results_modal.panel, _pause_modal.panel, _home_modal.panel, _level_select_modal.panel, _cosmetics_modal.panel, _settings_modal.panel, _privacy_modal.panel]:
 		if modal_panel != null:
 			MobileLayout.fit_modal(modal_panel, vp_size, insets)
 
@@ -175,15 +194,19 @@ func _update_puzzle_framing() -> void:
 	_camera.force_update_scroll()
 
 func load_level(level_idx: int, force_unlocked: bool = true) -> void:
+	if _external_presentation:
+		return
 	var target_idx := clampi(level_idx, 1, LevelData.TOTAL_LEVELS)
 	if not force_unlocked and save_manager != null and not save_manager.is_level_unlocked(target_idx):
 		sfx.play("reject")
 		return
 
 	current_level_index = target_idx
+	_level_started_ms = Time.get_ticks_msec()
+	_attempts[target_idx] = int(_attempts.get(target_idx, 0)) + 1
 	_bonus_claimed_this_win = false
 	_set_paused_state(false)
-	for modal in [_results_modal, _home_modal, _level_select_modal, _cosmetics_modal, _settings_modal]:
+	for modal in [_results_modal, _home_modal, _level_select_modal, _cosmetics_modal, _settings_modal, _privacy_modal]:
 		modal.backdrop.hide()
 	_menu_was_open = false
 	slice_controller.enabled = true
@@ -209,6 +232,9 @@ func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 	add_child(current_level)
 	if save_manager != null:
 		current_level.set_low_particle_quality(save_manager.particle_quality_low)
+		current_level.set_color_symbols(save_manager.colorblind_assist)
+		if current_level_index == 1 and save_manager.tutorial_completed and current_level.tutorial_guide != null:
+			current_level.tutorial_guide.skip_tutorial()
 		save_manager.stats["levels_played"] = int(save_manager.stats.get("levels_played", 0)) + 1
 	current_level.set_hints_visible(_hints_active)
 
@@ -217,7 +243,7 @@ func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 
 	_hud.show_level(current_level_index, current_level.level_title, is_daily_challenge_mode)
 	if not current_level.tutorial_tip.is_empty():
-		_hud.subtitle_label.text = current_level.tutorial_tip
+		_hud.subtitle_label.text = tr(current_level.tutorial_tip)
 	_hud.update_moves_display(current_level.moves_used, current_level.par_moves)
 	_hud.set_hint_active(_hints_active)
 	_puzzle_bounds = MobileLayout.measure_level(current_level)
@@ -263,12 +289,17 @@ func _on_level_won(lvl_idx: int) -> void:
 	var moves_taken: int = current_level.moves_used if (current_level != null and is_instance_valid(current_level)) else 1
 	var coins_awarded: int = 0
 	if save_manager != null:
+		if lvl_idx == 1 and not save_manager.tutorial_completed:
+			save_manager.tutorial_completed = true
+			analytics.log_event("tutorial_complete", {"level": 1})
 		coins_awarded = save_manager.record_level_win(lvl_idx, earned_stars, moves_taken)
 		if is_daily_challenge_mode:
 			coins_awarded += save_manager.record_daily_challenge_win(DailyChallenge.get_today_date_string())
 	if analytics != null:
-		analytics.log_event("level_complete", {"level": lvl_idx, "stars": earned_stars, "moves": moves_taken, "coins_awarded": coins_awarded})
+		analytics.log_event("level_complete", {"level": lvl_idx, "stars": earned_stars, "moves": moves_taken, "coins_awarded": coins_awarded, "duration_seconds": (Time.get_ticks_msec() - _level_started_ms) / 1000.0, "attempt": _attempts.get(lvl_idx, 1), "daily_challenge": is_daily_challenge_mode})
 	_results_modal.show_win(self, lvl_idx, earned_stars, coins_awarded, moves_taken, save_manager)
+	_refresh_reward_availability()
+	ad_service.prepare_at_break()
 
 func _on_level_failed(lvl_idx: int, reason: String) -> void:
 	slice_controller.enabled = false
@@ -277,7 +308,7 @@ func _on_level_failed(lvl_idx: int, reason: String) -> void:
 	if save_manager != null:
 		save_manager.stats["levels_failed"] = int(save_manager.stats.get("levels_failed", 0)) + 1
 	if analytics != null:
-		analytics.log_event("level_fail", {"level": lvl_idx, "reason": reason})
+		analytics.log_event("level_fail", {"level": lvl_idx, "duration_seconds": (Time.get_ticks_msec() - _level_started_ms) / 1000.0, "attempt": _attempts.get(lvl_idx, 1)})
 	_results_modal.show_fail(self, reason)
 
 func _on_bonus_coins_ad_pressed() -> void:
@@ -291,9 +322,14 @@ func _on_bonus_coins_ad_pressed() -> void:
 		sfx.play("star")
 		if analytics != null:
 			analytics.log_event("rewarded_ad_completed", {"placement": "win_bonus_coins"})
-		_results_modal.bonus_btn.text = "Bonus Claimed (+25 coins)"
+		_results_modal.bonus_btn.text = tr("Bonus Claimed (+25 coins)")
 		_results_modal.bonus_btn.disabled = true
 	)
+
+func _refresh_reward_availability() -> void:
+	if _results_modal == null or ad_service == null:
+		return
+	_results_modal.bonus_btn.visible = ad_service.is_rewarded_available() and not _bonus_claimed_this_win and current_level != null and current_level.is_finished and _results_modal.next_btn.visible
 
 func _on_hint_pressed() -> void:
 	sfx.play("ui_click")
@@ -316,7 +352,7 @@ func _on_next_level_pressed() -> void:
 	var go_next := func() -> void:
 		load_level(current_level_index + 1 if current_level_index < LevelData.TOTAL_LEVELS else 1)
 	if ad_service != null:
-		ad_service.on_level_completed_break(current_level_index, _bg_time, go_next)
+		ad_service.on_level_completed_break(current_level_index, Time.get_ticks_msec() / 1000.0, go_next)
 	else:
 		go_next.call()
 
@@ -339,6 +375,7 @@ func open_home_screen() -> void:
 	_set_paused_state(false)
 	_home_modal.refresh(save_manager)
 	_home_modal.backdrop.visible = true
+	ad_service.prepare_at_break()
 
 func start_daily_challenge() -> void:
 	sfx.play("ui_click")
@@ -397,7 +434,10 @@ func _on_restore_purchases_pressed() -> void:
 
 func _on_reset_progress_pressed() -> void:
 	sfx.play("reject")
+	var entitlement := save_manager.remove_ads_owned
 	save_manager.reset_to_defaults(true)
+	save_manager.remove_ads_owned = entitlement
+	save_manager.save_data()
 	_settings_modal.status_label.text = "Progress reset to Level 1."
 	load_level(1)
 	_settings_modal.refresh(sfx, slice_controller, save_manager)
@@ -425,6 +465,8 @@ func _on_toggle_colorblind_pressed() -> void:
 		return
 	save_manager.colorblind_assist = not save_manager.colorblind_assist
 	save_manager.save_data()
+	if current_level != null:
+		current_level.set_color_symbols(save_manager.colorblind_assist)
 	sfx.play("ui_click")
 	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
@@ -439,18 +481,24 @@ func _on_toggle_particles_pressed() -> void:
 	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_consent_pressed() -> void:
-	if save_manager == null:
-		return
-	var new_val: bool = not save_manager.privacy_consent_granted
-	save_manager.privacy_consent_granted = new_val
-	save_manager.privacy_prompt_seen = true
+	_privacy_modal.refresh(save_manager)
+	_privacy_modal.backdrop.show()
+
+func _on_analytics_choice_pressed() -> void:
+	save_manager.analytics_opt_in = not save_manager.analytics_opt_in
 	save_manager.save_data()
-	if analytics != null:
-		analytics.consent_granted = new_val
-	if ad_service != null:
-		ad_service.consent_granted = new_val
-	sfx.play("ui_click")
-	_settings_modal.refresh(sfx, slice_controller, save_manager)
+	analytics.set_opt_in(save_manager.analytics_opt_in)
+	if save_manager.analytics_opt_in:
+		analytics.log_event("session_start", {"source": "privacy_choice"})
+	_privacy_modal.refresh(save_manager)
+
+func _on_language_pressed() -> void:
+	var locales := ["en", "es", "pt_BR", "fr", "de", "id"]
+	var selected := locales.find(save_manager.locale_override)
+	save_manager.locale_override = locales[(selected + 1) % locales.size()]
+	save_manager.save_data()
+	TranslationServer.set_locale(save_manager.locale_override)
+	_privacy_modal.refresh(save_manager)
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -474,7 +522,7 @@ func _process(delta: float) -> void:
 		_camera.offset = _base_camera_offset
 
 func _menu_open() -> bool:
-	for modal in [_home_modal, _level_select_modal, _cosmetics_modal, _settings_modal]:
+	for modal in [_home_modal, _level_select_modal, _cosmetics_modal, _settings_modal, _privacy_modal]:
 		if modal.backdrop.visible:
 			return true
 	return false
@@ -482,10 +530,17 @@ func _menu_open() -> bool:
 func _sync_menu_state() -> void:
 	var menu_open := _menu_open()
 	_hud.root.visible = not menu_open
-	if menu_open != _menu_was_open:
-		_menu_was_open = menu_open
-		get_tree().paused = menu_open or _is_paused
-		slice_controller.enabled = not menu_open and not _is_paused and not _results_modal.backdrop.visible
+	_menu_was_open = menu_open
+	get_tree().paused = menu_open or _is_paused or _external_presentation
+	slice_controller.enabled = not menu_open and not _is_paused and not _external_presentation and not _results_modal.backdrop.visible
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_PAUSED and save_manager != null:
+		save_manager.save_data()
+		if current_level != null and not current_level.is_finished and not _external_presentation:
+			_set_paused_state(true)
+	elif what == NOTIFICATION_APPLICATION_RESUMED and analytics != null:
+		analytics.log_event("session_resume")
 
 func _draw() -> void:
 	# Static, quiet background keeps attention on the moving cascade.

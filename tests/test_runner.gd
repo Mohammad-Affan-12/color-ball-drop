@@ -186,6 +186,7 @@ func _verify_services_and_daily() -> bool:
 		return false
 
 	var an := AnalyticsService.new()
+	an.consent_granted = true
 	an.log_event("level_start", {"level": 1})
 	if not an.has_logged_event("level_start"):
 		printerr("FAIL: AnalyticsService did not record level_start")
@@ -205,13 +206,15 @@ func _verify_services_and_daily() -> bool:
 	# Simulate 3 completed levels and check level 12 at t=500s
 	ads.on_level_completed_break(11, 100.0, Callable())
 	ads.on_level_completed_break(12, 200.0, Callable())
-	if not ads.on_level_completed_break(13, 400.0, Callable()):
-		printerr("FAIL: AdService did not trigger eligible interstitial on 3rd level break >= Level 11")
+	if ads.on_level_completed_break(13, 400.0, Callable()):
+		printerr("FAIL: AdService showed an interstitial without a real native SDK and consent")
 		return false
 	# Immediately after interstitial, cooldown must block next one
 	if ads.can_show_interstitial(14, 410.0):
 		printerr("FAIL: AdService did not enforce cooldown after interstitial")
 		return false
+	ads.free()
+	an.free()
 
 	# Test BillingService SKU validation and production security gate
 	var temp_path := "res://.test-user/test_billing_save.cfg"
@@ -287,6 +290,12 @@ func _verify_pause_and_modals() -> bool:
 
 	# Verify mobile HUD touch target sizes (>= 48px) and unclipped title typography
 	var hud: GameplayHud = _main_node._hud
+	var symbols_before: bool = _main_node.save_manager.colorblind_assist
+	_main_node._on_toggle_colorblind_pressed()
+	if _main_node.current_level.balls[0].show_color_symbol == symbols_before or _main_node.current_level.containers[0].show_color_symbol == symbols_before:
+		printerr("FAIL: Color accessibility preference does not update gameplay symbols")
+		return false
+	_main_node._on_toggle_colorblind_pressed()
 	if hud.pause_btn.custom_minimum_size.y < 48 or hud.hint_btn.custom_minimum_size.y < 48 or hud.restart_btn.custom_minimum_size.y < 48:
 		printerr("FAIL: GameplayHud touch buttons are smaller than 48px height!")
 		return false

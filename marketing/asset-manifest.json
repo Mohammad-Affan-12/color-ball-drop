@@ -1,0 +1,25 @@
+{
+    "provenance":  "Real Godot 4.7.2 gameplay rendered from this project, automated solution swipes, isolated test save. Video input 540x960 at 60 fps; H.264 export 720x1280 at 30 fps, silent.",
+    "files":  [
+                  {
+                      "path":  "marketing/videos/level-3.mp4",
+                      "bytes":  518918,
+                      "sha256":  "b5a8dc2ea51017cf145792dfdc5e1203ffbd2da9629fedb89e848d5be07f4eb6"
+                  },
+                  {
+                      "path":  "marketing/videos/level-61.mp4",
+                      "bytes":  436363,
+                      "sha256":  "00f1d2eb54ad6a665e53133dfac25eb2593d5f8a5660a884349277f94d6f04a0"
+                  },
+                  {
+                      "path":  "marketing/store/icon-512.png",
+                      "bytes":  12337,
+                      "sha256":  "0af6ba0b7b52edb99c9fd60952e4e6b96a70b11b1e81c8744edcc8dc6561b7f1"
+                  },
+                  {
+                      "path":  "marketing/store/feature-1024x500.png",
+                      "bytes":  51885,
+                      "sha256":  "a29898bdd2a81324a4fc188cef2d94740450fc04415a9d4f89e6fefac37d654e"
+                  }
+              ]
+}

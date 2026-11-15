@@ -3,3 +3,5 @@
 /android/
 .tools/
 .test-user/
+/builds/
+/marketing/videos/*.avi

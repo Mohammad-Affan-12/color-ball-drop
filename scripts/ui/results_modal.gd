@@ -54,8 +54,8 @@ func show_win(host: Node, level: int, stars: int, coins: int, moves: int, _save:
 	header_label.add_theme_color_override("font_color", UiThemeHelper.TEAL)
 	stars_label.text = "★ ".repeat(stars) + "☆ ".repeat(3 - stars)
 	stars_label.show()
-	body_label.text = "Every color found its home.\n%d cuts · Nicely done." % moves
-	reward_label.text = "+%d coins earned" % coins
+	body_label.text = tr("Every color found its home.\n%d cuts · Nicely done.") % moves
+	reward_label.text = tr("+%d coins earned") % coins
 	reward_label.show()
 	next_btn.text = "Next level" if level < LevelData.TOTAL_LEVELS else "Play from level 1"
 	next_btn.show()

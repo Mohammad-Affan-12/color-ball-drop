@@ -14,7 +14,7 @@ const VALID_SKUS := {
 
 var save_manager: SaveManager = null
 var simulated_store_available: bool = true
-var allow_sandbox_mock_purchases: bool = OS.is_debug_build()
+var allow_sandbox_mock_purchases: bool = false
 var live_billing_attached: bool = false
 var _purchase_in_progress: bool = false
 
@@ -50,7 +50,7 @@ func purchase_product(product_key: String) -> bool:
 
 	# Security gate: never grant unverified client-side entitlements in release builds
 	# unless a verified native billing singleton callback completes.
-	if not live_billing_attached and not allow_sandbox_mock_purchases:
+	if not OS.is_debug_build() or not allow_sandbox_mock_purchases:
 		_purchase_in_progress = false
 		purchase_failed.emit(product_key, "Native store billing required in production build")
 		return false

@@ -21,9 +21,11 @@ var music_muted: bool = false
 var music_volume_percent: int = 75
 var vibration_enabled: bool = true
 var colorblind_assist: bool = true
-var particle_quality_low: bool = false
-var privacy_consent_granted: bool = true
+var particle_quality_low: bool = OS.get_name() == "Android"
+var privacy_consent_granted: bool = false # Legacy field; never authorizes SDK collection.
 var privacy_prompt_seen: bool = false
+var analytics_opt_in: bool = false
+var locale_override: String = ""
 
 var daily_completed_dates: Array = []
 var daily_streak: int = 0
@@ -101,9 +103,11 @@ func _try_load_from_file(path: String) -> bool:
 	music_volume_percent = clampi(int(cfg.get_value("audio", "music_volume_percent", 75)), 0, 100)
 	vibration_enabled = bool(cfg.get_value("settings", "vibration_enabled", true))
 	colorblind_assist = bool(cfg.get_value("settings", "colorblind_assist", true))
-	particle_quality_low = bool(cfg.get_value("settings", "particle_quality_low", false))
-	privacy_consent_granted = bool(cfg.get_value("settings", "privacy_consent_granted", true))
+	particle_quality_low = bool(cfg.get_value("settings", "particle_quality_low", OS.get_name() == "Android"))
+	privacy_consent_granted = bool(cfg.get_value("settings", "privacy_consent_granted", false))
 	privacy_prompt_seen = bool(cfg.get_value("settings", "privacy_prompt_seen", false))
+	analytics_opt_in = bool(cfg.get_value("settings", "analytics_opt_in", false))
+	locale_override = str(cfg.get_value("settings", "locale_override", ""))
 
 	var daily_var: Variant = cfg.get_value("daily", "completed_dates", [])
 	daily_completed_dates = (daily_var as Array).duplicate() if daily_var is Array else []
@@ -141,6 +145,8 @@ func save_data() -> Error:
 	cfg.set_value("settings", "particle_quality_low", particle_quality_low)
 	cfg.set_value("settings", "privacy_consent_granted", privacy_consent_granted)
 	cfg.set_value("settings", "privacy_prompt_seen", privacy_prompt_seen)
+	cfg.set_value("settings", "analytics_opt_in", analytics_opt_in)
+	cfg.set_value("settings", "locale_override", locale_override)
 
 	cfg.set_value("daily", "completed_dates", daily_completed_dates)
 	cfg.set_value("daily", "streak", daily_streak)
@@ -173,7 +179,7 @@ func reset_to_defaults(write_to_disk: bool = true) -> void:
 	music_volume_percent = 75
 	vibration_enabled = true
 	colorblind_assist = true
-	particle_quality_low = false
+	particle_quality_low = OS.get_name() == "Android"
 	daily_completed_dates = []
 	daily_streak = 0
 	stats = {
@@ -263,7 +269,9 @@ func record_daily_challenge_win(date_str: String) -> int:
 		save_data()
 		return 15
 	daily_completed_dates.append(date_str)
-	daily_streak += 1
+	var today_unix := int(Time.get_unix_time_from_datetime_string(date_str + "T00:00:00"))
+	var yesterday := Time.get_date_string_from_unix_time(today_unix - 86400)
+	daily_streak = daily_streak + 1 if daily_completed_dates.has(yesterday) else 1
 	var reward := 75
 	coins += reward
 	save_data()

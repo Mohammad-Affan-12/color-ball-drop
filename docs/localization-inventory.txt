@@ -1,0 +1,243 @@
+%d / %d
+%d / 300 stars   ·   %d coins
+%d coins   ·   %d / 300 stars
+%d coins · %d / 300 stars\nStar chests unlock from 10 to 190 stars
+%d cuts left
+%s ball fell out of bounds!
+%s ball landed in %s container!
++%d coins earned
++%d over par
++1 %s!
++25 coins · Watch ad
++75 coins
+100 LEVELS CLEARED!
+3 cuts left
+A cut above
+A little cut. A colorful cascade.
+Ad unavailable. Keep playing offline.
+Alternating Chutes
+Armored Chains
+Avoid the decoy trap rope (✖) and slice only the matching supports!
+BLADE TRAILS & STAR CHESTS
+Back to puzzle
+Balance Beam
+Balance Boss
+Balls stopped before filling all containers!
+Battery saver
+Blade trails
+Blazing crimson-orange comet.
+Bonus Claimed (+25 coins)
+Bridge Lock
+Bumper & Chain
+CHAIN REACTION!
+CHAPTER 5: Master puzzles combine Triggers, Chains, Dye Rings & Portals!
+CUT &\nCASCADE
+Cascade Factory Finale
+Chain & Dye
+Chain Lockout
+Chain Reaction
+Chain Reaction Master
+Chain Warp
+Chameleon Drop
+Chapter %d · Levels %d–%d
+Chapter 1: The First Cut
+Chapter 2: Color Control
+Chapter 3: Physics Workshop
+Chapter 4: Cascade Factory
+Chapter 5: Cascade Master
+Choose a level
+Choose your cascade
+Classic Slash
+Color Alchemy
+Color Control Finale
+Color symbols · 
+Combine Portals, Filter Gates, and Factory Deflectors across 4 lanes!
+Content-Type: application/json
+Continue · Level %d
+Cosmic Trail
+Crisp cyan & white energy blade.
+Cross-Screen Warp
+Crossed Filters
+Crystal Trail
+Cut the top rope to drop the Steel Striker onto the Chain Trigger!
+DAILY CASCADE  /  LEVEL %02d
+DYED %s!
+Daily challenge
+Daily challenge · 
+Decoy Support
+Deep Cobalt plasma arc.
+Diamond-violet refractive beam.
+Dimensional Hop
+Double Dye
+Double Relay
+Drop balls onto the Seesaw Bridges to guide them into matching containers!
+Dual Chain Locks
+Dye & Filter
+Dye Conveyor
+Dye falling balls and route them through four Color Filter Gates!
+Dynamic Fulcrum
+Electric Trail
+Every color found its home.\n%d cuts · Nicely done.
+Factory Rhythm
+Filtered Ricochet
+Filtered Teleport
+Fire Trail
+First Cut Finale
+Flip the lower bridge with the Steel Striker BEFORE releasing the upper ramp balls!
+Four-Color Spectrum
+Four-Way Cross
+Four-Way Warp
+Fourfold Alchemy
+Gate & Trigger
+Gatekeeper Boss
+Golden Spark
+Google ad privacy options
+Google manages ad privacy separately. Ads need internet. Hints, retries and all puzzles stay free. Advertising may process IP address, device identifiers, interactions and diagnostics.
+Grand Cascade
+Guard the Chute
+Guide Red, Blue, Yellow, and Green balls into all four containers!
+Guide balls through matching Color Filter Gates into their containers!
+High-voltage emerald-cyan surge.
+Hint on
+Invalid product SKU
+Kinetic Gears
+LEVEL %02d
+LEVEL 01
+LEVEL COMPLETE!
+LEVEL FAILED
+Language: %s
+Laser Filter
+Level %d of 100 unlocked · %d day streak
+Level %d · %d stars
+Level %d · Locked
+Level %d: 
+Level %d: %s
+Level 1
+Look Before You Cut
+MULTI-CUT x%d!
+Make it yours
+Mastery I: Alchemy Warp
+Mastery II: Armored Sort
+Mastery III: Seesaw Warp
+Mastery IV: Prism Lock
+Mastery IX: Portal Filter
+Mastery V: Quad Relay
+Mastery VI: Pinball Alchemy
+Mastery VII: Twin Locks
+Mastery VIII: Spectrum Mill
+Mastery X: Grand Relay
+Mastery XI: Decoy Warp
+Mastery XII: Chromatic Vault
+Mastery XIII: Kinetic Maze
+Mastery XIV: Triple Trigger
+Mastery XIX: Ultimate Contraption
+Mastery XV: Laser Labyrinth
+Mastery XVI: Starlight Cascade
+Mastery XVII: Supernova Sort
+Mastery XVIII: Quantum Chutes
+Mastery XX: Grand Finale
+Match colors  %d / %d
+Match colors  0 / 5
+Moving Paddles
+Music · 
+Music · On
+NEW: Bumper Pins bounce falling balls with extra energy!
+NEW: Color Dye Rings transform balls into a new color!
+NEW: Color Filter Gates let ONLY matching colored balls pass!
+NEW: Moving Deflectors oscillate and rotate along the chutes!
+NEW: Portal Pairs teleport falling balls across the arena!
+NEW: Seesaw Bridges tilt dynamically under falling balls!
+NEW: Steel Chains cannot be cut! Use Chain Triggers (⚡) to retract them!
+NEW: Steel Strikers activate Chain Triggers (⚡)!
+Native store billing required in production build
+Neon Blue
+Next level
+ORDER MATTERS: Drop the Steel Striker BEFORE cutting the ramp beams!
+Optional analytics sends puzzle events, a random app ID, language and app version to PostHog. Your IP can estimate your country. No GPS, email or advertising ID. Turn off to stop sending and clear the local analytics ID. Previously sent data stays subject to the published privacy policy.
+Optional analytics: Off
+Optional analytics: On
+Order of Operations
+Oscillating Chute
+Padlock Puzzle
+Particles · 
+Pass all four colors through their matching Color Filter Gates!
+Pendulum Swing
+Pinball Bounce
+Piston & Portal
+Play from level 1
+Portal & Dye
+Portal Boss
+Portal Ricochet
+Precision Strike
+Prism Cascade
+Prismatic spectrum wave.
+Privacy & data choices
+Privacy policy
+Progress reset to Level 1.
+Purchase transaction already in progress
+Purchases verified (%d active).
+Radiant solar gold ribbon.
+Rainbow Trail
+Rainbow Transform
+Remove Ads
+Reset local progress
+Restart level
+Restore purchases
+Retract the Barrier
+Retract the armored Steel Chains with the Striker and balance the Seesaw!
+Ricochet Relay
+Rotary Mill
+Route Green, Yellow, and Red balls into their three matching containers!
+SETTINGS & ACCESSIBILITY
+SaveManager unavailable
+Seesaw Lock
+Seesaw Relay
+Seesaw Spectrum
+Selective Entry
+Shifting Gates
+Sound effects · 
+Sound effects · On
+Spectrum Barrier
+Split Second
+Starlight nebula supernova slash.
+Steel & Silk
+Store unavailable in offline mode
+Swipe across supports to drop balls into matching containers!
+Swipe across the beams and rope to cascade Red & Blue balls!
+Swipe gold supports · Match ball colors
+Synchronized Factory
+Take a breath
+Teleport balls across the screen through linked Portal Pairs!
+The Gauntlet
+Three-Gate Sort
+Tilt & Sort
+Tipping Point
+Transform balls through Dye Rings and pass through matching Filter Gates!
+Trick Dye Trap
+Trigger both Chain Switches to retract the Steel Chains and collect 4 colors!
+Trigger dual chain reactions and cut the ropes to collect all 4 colors!
+Trigger dual chain reactions, retract steel chains, and dye all 4 colors!
+Triple Streams
+Try Hint to see the recommended cut order.
+Try again
+Twin Cascades
+Twin Decoys
+Twin Gates
+Twin Portals
+Twin Seesaws
+Unlock · %d coins
+Use chain triggers and bumper ricochets to sort all four colors!
+Version %s · Play offline
+Vibration · 
+Vibration · On
+WATCH OUT: Do NOT cut decoy ropes (✖) holding wrong-color balls!
+WRONG COLOR!
+Warp Trigger
+Warp through Portals, dye into matching colors, and avoid the decoy trap (✖)!
+Weighted Drop
+Workshop Finale
+Your cascade can wait.
+Your puzzles and progress work offline. No account needed.
+Zig-Zag Ricochet
+★ 
+☆ 

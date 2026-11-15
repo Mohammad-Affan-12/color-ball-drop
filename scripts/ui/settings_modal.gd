@@ -24,9 +24,10 @@ func build(ui_layer: CanvasLayer, app_version: String, on_sfx: Callable, on_musi
 	colorblind_btn = UiThemeHelper.action(content, "", on_colorblind)
 	particles_btn = UiThemeHelper.action(content, "", on_particles)
 	consent_btn = UiThemeHelper.action(content, "", on_consent)
-	UiThemeHelper.action(content, "Restore purchases", on_restore)
+	var restore := UiThemeHelper.action(content, "Restore purchases", on_restore)
+	restore.hide()
 	UiThemeHelper.action(content, "Reset local progress", on_reset)
-	status_label = UiThemeHelper.label("Version %s · Play offline" % app_version, 26, UiThemeHelper.MUTED)
+	status_label = UiThemeHelper.label(tr("Version %s · Play offline") % app_version, 26, UiThemeHelper.MUTED)
 	content.add_child(status_label)
 	UiThemeHelper.action(content, "Back to puzzle", func() -> void:
 		backdrop.hide()
@@ -34,9 +35,9 @@ func build(ui_layer: CanvasLayer, app_version: String, on_sfx: Callable, on_musi
 	)
 
 func refresh(sfx: SfxManager, slice: SliceController, save: SaveManager) -> void:
-	sfx_btn.text = "Sound effects · " + ("Off" if sfx.muted else "On")
-	music_btn.text = "Music · " + ("Off" if sfx.music_muted else "On")
-	haptics_btn.text = "Vibration · " + ("On" if slice.vibration_enabled else "Off")
-	colorblind_btn.text = "Color symbols · " + ("On" if save.colorblind_assist else "Off")
-	particles_btn.text = "Particles · " + ("Battery saver" if save.particle_quality_low else "Full")
-	consent_btn.text = "Analytics & ads · " + ("Allowed" if save.privacy_consent_granted else "Declined")
+	sfx_btn.text = tr("Sound effects · ") + (tr("Off") if sfx.muted else tr("On"))
+	music_btn.text = tr("Music · ") + (tr("Off") if sfx.music_muted else tr("On"))
+	haptics_btn.text = tr("Vibration · ") + (tr("On") if slice.vibration_enabled else tr("Off"))
+	colorblind_btn.text = tr("Color symbols · ") + (tr("On") if save.colorblind_assist else tr("Off"))
+	particles_btn.text = tr("Particles · ") + (tr("Battery saver") if save.particle_quality_low else tr("Full"))
+	consent_btn.text = tr("Privacy & data choices")

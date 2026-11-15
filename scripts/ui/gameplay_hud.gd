@@ -93,18 +93,18 @@ func puzzle_area() -> Rect2:
 	return Rect2(12, top, root.size.x - 24, maxf(bottom - top, 1))
 
 func show_level(index: int, caption: String, daily: bool) -> void:
-	level_label.text = "DAILY CASCADE  /  LEVEL %02d" % index if daily else "LEVEL %02d" % index
-	title_label.text = caption.trim_prefix("Level %d: " % index)
+	level_label.text = tr("DAILY CASCADE  /  LEVEL %02d") % index if daily else tr("LEVEL %02d") % index
+	title_label.text = caption.trim_prefix(tr("Level %d: ") % index)
 	subtitle_label.text = "Swipe gold supports · Match ball colors"
 
 func update_moves_display(moves_used: int, par_moves: int) -> void:
-	moves_label.text = "%d cuts left" % maxi(par_moves - moves_used, 0)
+	moves_label.text = tr("%d cuts left") % maxi(par_moves - moves_used, 0)
 	# Par remains a star target, never a newly introduced hard cut limit.
 	if moves_used > par_moves:
 		moves_label.text = "+%d over par" % (moves_used - par_moves)
 
 func update_progress_display(collected: int, total: int) -> void:
-	progress_label.text = "Match colors  %d / %d" % [collected, total]
+	progress_label.text = tr("Match colors  %d / %d") % [collected, total]
 	if _progress_tween != null:
 		_progress_tween.kill()
 	progress_label.modulate = Color.WHITE

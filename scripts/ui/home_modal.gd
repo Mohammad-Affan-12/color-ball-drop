@@ -29,7 +29,8 @@ func build(ui_layer: CanvasLayer, on_play: Callable, on_levels: Callable, on_dai
 	daily_btn = UiThemeHelper.action(content, "Daily challenge", _navigate.bind(on_daily))
 	UiThemeHelper.action(content, "Blade trails", _navigate.bind(on_cosmetics))
 	UiThemeHelper.action(content, "Settings", _navigate.bind(on_settings))
-	remove_ads_btn = UiThemeHelper.action(content, "Remove Ads ($2.99)", on_purchase)
+	remove_ads_btn = UiThemeHelper.action(content, "Remove Ads", on_purchase)
+	remove_ads_btn.hide() # No purchase offer until real verified billing exists.
 	UiThemeHelper.action(content, "Back to puzzle", _navigate.bind(on_close))
 
 func _navigate(callback: Callable) -> void:
@@ -37,8 +38,8 @@ func _navigate(callback: Callable) -> void:
 	callback.call()
 
 func refresh(save: SaveManager) -> void:
-	currency_label.text = "%d coins   ·   %d / 300 stars" % [save.coins, save.get_total_stars()]
-	stats_label.text = "Level %d of 100 unlocked · %d day streak" % [save.highest_unlocked_level, save.daily_streak]
-	play_btn.text = "Continue · Level %d" % save.highest_unlocked_level
+	currency_label.text = tr("%d coins   ·   %d / 300 stars") % [save.coins, save.get_total_stars()]
+	stats_label.text = tr("Level %d of 100 unlocked · %d day streak") % [save.highest_unlocked_level, save.daily_streak]
+	play_btn.text = tr("Continue · Level %d") % save.highest_unlocked_level
 	daily_btn.text = "Daily challenge · " + ("Completed" if save.is_daily_completed(DailyChallenge.get_today_date_string()) else "+75 coins")
-	remove_ads_btn.visible = not save.remove_ads_owned
+	remove_ads_btn.hide()

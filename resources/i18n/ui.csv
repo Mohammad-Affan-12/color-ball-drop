@@ -1,0 +1,49 @@
+keys,en,es,pt_BR,fr,de,id
+Continue,Continue,Continuar,Continuar,Continuer,Weiter,Lanjutkan
+Choose a level,Choose a level,Elige un nivel,Escolha uma fase,Choisir un niveau,Level wählen,Pilih level
+Daily challenge,Daily challenge,Desafío diario,Desafio diário,Défi quotidien,Tägliche Herausforderung,Tantangan harian
+Blade trails,Blade trails,Estelas de corte,Rastros de corte,Traînées de coupe,Schnittspuren,Jejak potongan
+Settings,Settings,Ajustes,Configurações,Paramètres,Einstellungen,Pengaturan
+Back to puzzle,Back to puzzle,Volver al puzle,Voltar ao puzzle,Retour au puzzle,Zurück zum Rätsel,Kembali ke puzzle
+Next level,Next level,Siguiente nivel,Próxima fase,Niveau suivant,Nächstes Level,Level berikutnya
+Try again,Try again,Reintentar,Tentar de novo,Réessayer,Erneut versuchen,Coba lagi
+Hint,Hint,Pista,Dica,Indice,Hinweis,Petunjuk
+Hint on,Hint on,Pista activada,Dica ativada,Indice activé,Hinweis an,Petunjuk aktif
+Pause,Pause,Pausa,Pausar,Pause,Pause,Jeda
+Restart,Restart,Reiniciar,Reiniciar,Recommencer,Neustart,Ulangi
+Resume,Resume,Continuar,Continuar,Reprendre,Fortsetzen,Lanjutkan
+Make it yours,Make it yours,A tu gusto,Do seu jeito,À votre goût,Ganz nach deinem Geschmack,Sesuai seleramu
+SETTINGS & ACCESSIBILITY,SETTINGS & ACCESSIBILITY,AJUSTES Y ACCESIBILIDAD,CONFIGURAÇÕES E ACESSIBILIDADE,PARAMÈTRES ET ACCESSIBILITÉ,EINSTELLUNGEN & BARRIEREFREIHEIT,PENGATURAN & AKSESIBILITAS
+LEVEL COMPLETE!,LEVEL COMPLETE!,¡NIVEL COMPLETADO!,FASE CONCLUÍDA!,NIVEAU TERMINÉ !,LEVEL GESCHAFFT!,LEVEL SELESAI!
+LEVEL FAILED,LEVEL FAILED,INTÉNTALO DE NUEVO,TENTE DE NOVO,RÉESSAYEZ,NOCH EIN VERSUCH,COBA LAGI
+100 LEVELS CLEARED!,100 LEVELS CLEARED!,¡100 NIVELES COMPLETADOS!,100 FASES CONCLUÍDAS!,100 NIVEAUX TERMINÉS !,100 LEVEL GESCHAFFT!,100 LEVEL SELESAI!
+Play from level 1,Play from level 1,Jugar desde el nivel 1,Jogar desde a fase 1,Rejouer depuis le niveau 1,Ab Level 1 spielen,Main dari level 1
++25 coins · Watch ad,+25 coins · Watch ad,+25 monedas · Ver anuncio,+25 moedas · Ver anúncio,+25 pièces · Voir une pub,+25 Münzen · Werbung ansehen,+25 koin · Tonton iklan
+Bonus Claimed (+25 coins),Bonus Claimed (+25 coins),Bono recibido (+25 monedas),Bônus recebido (+25 moedas),Bonus reçu (+25 pièces),Bonus erhalten (+25 Münzen),Bonus diterima (+25 koin)
+Try Hint to see the recommended cut order.,Try Hint to see the recommended cut order.,Usa Pista para ver el orden de corte recomendado.,Use Dica para ver a ordem de corte recomendada.,Utilisez Indice pour voir l'ordre de coupe conseillé.,Hinweis zeigt die empfohlene Schnittreihenfolge.,Gunakan Petunjuk untuk melihat urutan potongan.
+Swipe gold supports · Match ball colors,Swipe gold supports · Match ball colors,Desliza sobre soportes dorados · Une colores,Corte os suportes dourados · Combine as cores,Balayez les supports dorés · Associez les couleurs,Goldene Stützen durchtrennen · Farben zuordnen,Usap penyangga emas · Cocokkan warna
+LEVEL %02d,LEVEL %02d,NIVEL %02d,FASE %02d,NIVEAU %02d,LEVEL %02d,LEVEL %02d
+DAILY CASCADE  /  LEVEL %02d,DAILY CASCADE  /  LEVEL %02d,CASCADA DIARIA  /  NIVEL %02d,CASCATA DIÁRIA  /  FASE %02d,CASCADE DU JOUR  /  NIVEAU %02d,TAGESKASKADE  /  LEVEL %02d,KASKADE HARIAN  /  LEVEL %02d
+%d cuts left,%d cuts left,%d cortes restantes,%d cortes restantes,%d coupes restantes,%d Schnitte übrig,%d potongan tersisa
++%d over par,+%d over par,+%d sobre el objetivo,+%d acima da meta,+%d au-dessus de l'objectif,+%d über Vorgabe,+%d di atas target
+Match colors  %d / %d,Match colors  %d / %d,Une colores  %d / %d,Combine as cores  %d / %d,Associez les couleurs  %d / %d,Farben zuordnen  %d / %d,Cocokkan warna  %d / %d
++%d coins earned,+%d coins earned,+%d monedas ganadas,+%d moedas ganhas,+%d pièces gagnées,+%d Münzen verdient,+%d koin didapat
+Continue · Level %d,Continue · Level %d,Continuar · Nivel %d,Continuar · Fase %d,Continuer · Niveau %d,Weiter · Level %d,Lanjutkan · Level %d
+Privacy & data choices,Privacy & data choices,Privacidad y datos,Privacidade e dados,Confidentialité et données,Datenschutz und Daten,Privasi dan data
+Optional analytics: On,Optional analytics: On,Analítica opcional: activada,Análise opcional: ativada,Analyses facultatives : activées,Optionale Analyse: an,Analitik opsional: aktif
+Optional analytics: Off,Optional analytics: Off,Analítica opcional: desactivada,Análise opcional: desativada,Analyses facultatives : désactivées,Optionale Analyse: aus,Analitik opsional: nonaktif
+Google ad privacy options,Google ad privacy options,Privacidad de anuncios de Google,Privacidade de anúncios do Google,Confidentialité des pubs Google,Google-Werbedatenschutz,Privasi iklan Google
+Privacy policy,Privacy policy,Política de privacidad,Política de privacidade,Politique de confidentialité,Datenschutzerklärung,Kebijakan privasi
+Language: %s,Language: %s,Idioma: %s,Idioma: %s,Langue : %s,Sprache: %s,Bahasa: %s
+Your puzzles and progress work offline. No account needed.,Your puzzles and progress work offline. No account needed.,Tus puzles y progreso funcionan sin conexión. Sin cuenta.,Seus puzzles e progresso funcionam offline. Sem conta.,Vos puzzles et votre progression fonctionnent hors ligne. Sans compte.,Rätsel und Fortschritt funktionieren offline. Kein Konto nötig.,Puzzle dan progres tetap berfungsi offline. Tanpa akun.
+A little cut. A colorful cascade.,A little cut. A colorful cascade.,Un pequeño corte. Una cascada de color.,Um pequeno corte. Uma cascata de cores.,Une petite coupe. Une cascade de couleurs.,Ein kleiner Schnitt. Eine bunte Kaskade.,Satu potongan kecil. Kaskade penuh warna.
+Reset local progress,Reset local progress,Reiniciar progreso local,Reiniciar progresso local,Réinitialiser la progression,Fortschritt zurücksetzen,Atur ulang progres lokal
+Off,Off,No,Não,Non,Aus,Nonaktif
+On,On,Sí,Sim,Oui,An,Aktif
+Sound effects · ,Sound effects · ,Efectos de sonido · ,Efeitos sonoros · ,Effets sonores · ,Soundeffekte · ,Efek suara · 
+Music · ,Music · ,Música · ,Música · ,Musique · ,Musik · ,Musik · 
+Vibration · ,Vibration · ,Vibración · ,Vibração · ,Vibrations · ,Vibration · ,Getaran · 
+Color symbols · ,Color symbols · ,Símbolos de color · ,Símbolos de cor · ,Symboles de couleur · ,Farbsymbole · ,Simbol warna · 
+Particles · ,Particles · ,Partículas · ,Partículas · ,Particules · ,Partikel · ,Partikel · 
+Battery saver,Battery saver,Ahorro de batería,Economia de bateria,Économie de batterie,Akkusparmodus,Hemat baterai
+Full,Full,Completas,Completas,Complet,Alle,Penuh

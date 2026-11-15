@@ -1,0 +1,97 @@
+{
+    "note":  "Local debug signature, APK ZIP and native ELF alignment, exclusions and unsigned release-mode packaging audit; not Play approval or physical-device acceptance",
+    "apk_zip_alignment_16k_verified":  true,
+    "apk_signature_verified":  true,
+    "apk_signature_result":  [
+                                 "Verifies",
+                                 "Verified using v1 scheme (JAR signing): false",
+                                 "Verified using v2 scheme (APK Signature Scheme v2): true",
+                                 "Verified using v3 scheme (APK Signature Scheme v3): false",
+                                 "Verified using v3.1 scheme (APK Signature Scheme v3.1): false",
+                                 "Verified using v4 scheme (APK Signature Scheme v4): false",
+                                 "Verified for SourceStamp: false",
+                                 "Number of signers: 1"
+                             ],
+    "artifacts":  [
+                      {
+                          "file":  "builds/CutAndCascade-AdMob-test.apk",
+                          "bytes":  88397049,
+                          "sha256":  "be90df9891b08f7d66b87b810e9b9e46a081b869bfd89efe1fceea6a4861caf5",
+                          "bundle_config_present":  false,
+                          "jar_signature_entries":  0,
+                          "unwanted_sample_or_marketing_assets":  0,
+                          "native_libraries":  [
+                                                   {
+                                                       "path":  "lib/arm64-v8a/libc++_shared.so",
+                                                       "load_segment_alignments":  [
+                                                                                       16384,
+                                                                                       16384,
+                                                                                       16384
+                                                                                   ],
+                                                       "offset_address_congruence_16k":  true,
+                                                       "elf_load_alignment_16k":  true
+                                                   },
+                                                   {
+                                                       "path":  "lib/arm64-v8a/libgodot_android.so",
+                                                       "load_segment_alignments":  [
+                                                                                       16384,
+                                                                                       16384,
+                                                                                       16384
+                                                                                   ],
+                                                       "offset_address_congruence_16k":  true,
+                                                       "elf_load_alignment_16k":  true
+                                                   }
+                                               ]
+                      },
+                      {
+                          "file":  "builds/CutAndCascade-unsigned-qa.aab",
+                          "bytes":  56797239,
+                          "sha256":  "e1dd828c4e32ab30bcf713cca81bb239f1eaa27bae4d431f9aec0a9691a4ae74",
+                          "bundle_config_present":  true,
+                          "jar_signature_entries":  0,
+                          "unwanted_sample_or_marketing_assets":  0,
+                          "native_libraries":  [
+                                                   {
+                                                       "path":  "base/lib/arm64-v8a/libc++_shared.so",
+                                                       "load_segment_alignments":  [
+                                                                                       16384,
+                                                                                       16384,
+                                                                                       16384
+                                                                                   ],
+                                                       "offset_address_congruence_16k":  true,
+                                                       "elf_load_alignment_16k":  true
+                                                   },
+                                                   {
+                                                       "path":  "base/lib/arm64-v8a/libgodot_android.so",
+                                                       "load_segment_alignments":  [
+                                                                                       16384,
+                                                                                       16384,
+                                                                                       16384
+                                                                                   ],
+                                                       "offset_address_congruence_16k":  true,
+                                                       "elf_load_alignment_16k":  true
+                                                   },
+                                                   {
+                                                       "path":  "base/lib/armeabi-v7a/libc++_shared.so",
+                                                       "load_segment_alignments":  [
+                                                                                       4096,
+                                                                                       4096,
+                                                                                       4096
+                                                                                   ],
+                                                       "offset_address_congruence_16k":  false,
+                                                       "elf_load_alignment_16k":  false
+                                                   },
+                                                   {
+                                                       "path":  "base/lib/armeabi-v7a/libgodot_android.so",
+                                                       "load_segment_alignments":  [
+                                                                                       4096,
+                                                                                       4096,
+                                                                                       4096
+                                                                                   ],
+                                                       "offset_address_congruence_16k":  false,
+                                                       "elf_load_alignment_16k":  false
+                                                   }
+                                               ]
+                      }
+                  ]
+}

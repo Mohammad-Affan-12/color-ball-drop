@@ -1,0 +1,34 @@
+{
+	"engine": "4.7.2-stable (official)",
+	"measurements": [
+		{
+			"level": 1,
+			"objects": 2350.0,
+			"physics_p95_ms": 10.019,
+			"process_p95_ms": 3.809,
+			"static_memory_mib": 75.2354116439819
+		},
+		{
+			"level": 41,
+			"objects": 2380.0,
+			"physics_p95_ms": 10.019,
+			"process_p95_ms": 3.809,
+			"static_memory_mib": 75.4177541732788
+		},
+		{
+			"level": 61,
+			"objects": 2340.0,
+			"physics_p95_ms": 49.73,
+			"process_p95_ms": 6.284,
+			"static_memory_mib": 75.3428068161011
+		},
+		{
+			"level": 100,
+			"objects": 2473.0,
+			"physics_p95_ms": 49.73,
+			"process_p95_ms": 6.284,
+			"static_memory_mib": 75.8122434616089
+		}
+	],
+	"mode": "synthetic headless fixed-fps workload; no mobile GPU/battery conclusion"
+}

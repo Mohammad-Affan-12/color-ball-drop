@@ -15,6 +15,7 @@ extends RigidBody2D
 
 var is_collected: bool = false
 var is_heavy_striker: bool = false
+var show_color_symbol := true
 var _trail_points: Array[Vector2] = []
 var _dye_flash: float = 0.0
 const MAX_TRAIL_POINTS := 9
@@ -78,6 +79,8 @@ func _update_collision_shape() -> void:
 func _physics_process(delta: float) -> void:
 	if is_collected:
 		return
+	if freeze and _trail_points.is_empty() and _dye_flash <= 0.0:
+		return # Static held balls do not need to rebuild their draw commands.
 	if _dye_flash > 0.0:
 		_dye_flash = maxf(_dye_flash - delta * 3.5, 0.0)
 	if linear_velocity.length() > 35.0:
@@ -105,5 +108,6 @@ func _draw() -> void:
 		var t := float(step) / 9.0
 		draw_circle(Vector2(-1, -2).rotated(-rotation) * t, (radius - 1.4) * (1.0 - t * 0.42), main.lerp(light, t * 0.55))
 	draw_arc(Vector2.ZERO, radius - 2, PI * 1.08 - rotation, PI * 1.8 - rotation, 20, Color(light, 0.8), 1.5, true)
-	GameColors.draw_color_emblem(self, Vector2(0, 1), radius * 0.9, color_type, Color(dark.darkened(0.25), 0.9))
+	if show_color_symbol:
+		GameColors.draw_color_emblem(self, Vector2(0, 1), radius * 0.9, color_type, Color(dark.darkened(0.25), 0.9))
 	draw_circle(Vector2(-radius * 0.3, -radius * 0.4).rotated(-rotation), radius * 0.18, Color(1, 1, 1, 0.88))

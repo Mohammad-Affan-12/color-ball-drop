@@ -89,6 +89,15 @@ func _build_tutorial_guide() -> void:
 		add_child(tutorial_guide)
 		tutorial_guide.setup(self, tutorial_tip, tutorial_tip_pos)
 
+func set_color_symbols(enabled: bool) -> void:
+	for ball in balls:
+		if is_instance_valid(ball):
+			ball.show_color_symbol = enabled
+			ball.queue_redraw()
+	for container in containers:
+		container.show_color_symbol = enabled
+		container.queue_redraw()
+
 func set_low_particle_quality(low: bool) -> void:
 	if _confetti != null:
 		_confetti.amount = 24 if low else 56
