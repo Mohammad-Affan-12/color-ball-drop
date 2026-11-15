@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/chain_trigger.gd" id="1_trigger"]
+
+[node name="ChainTrigger" type="Area2D"]
+script = ExtResource("1_trigger")
