@@ -89,38 +89,19 @@ func _physics_process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var main_col := GameColors.get_main_color(color_type)
-	var dark_col := GameColors.get_dark_color(color_type)
-	var light_col := GameColors.get_light_color(color_type)
-
-	if _dye_flash > 0.0:
-		main_col = main_col.lerp(Color.WHITE, _dye_flash * 0.65)
-
-	# Draw motion trail in local coordinates
-	if _trail_points.size() > 1:
-		for i in range(_trail_points.size()):
-			var local_pt := to_local(_trail_points[i])
-			var ratio := 1.0 - float(i) / float(_trail_points.size())
-			var trail_col := Color(main_col.r, main_col.g, main_col.b, ratio * 0.28)
-			draw_circle(local_pt, radius * ratio * 0.78, trail_col)
-
-	# Drop shadow (in screen-down direction)
-	var down_local := Vector2(0, 3.0).rotated(-rotation)
-	draw_circle(down_local, radius + 1.5, Color(0.0, 0.0, 0.0, 0.28))
-
-	# Outer dark border
-	draw_circle(Vector2.ZERO, radius, dark_col)
-	# Main vibrant fill
-	draw_circle(Vector2.ZERO, radius - 2.5, main_col)
-	# Inner subtle glow
-	draw_circle(Vector2(-radius * 0.15, -radius * 0.15), radius * 0.62, main_col.lerp(light_col, 0.35))
-
-	# Accessible colorblind geometric emblem inside ball
-	var emblem_col := Color(dark_col.r, dark_col.g, dark_col.b, 0.58)
-	GameColors.draw_color_emblem(self, Vector2.ZERO, radius, color_type, emblem_col)
-
-	# Specular highlight (kept near top-left in world space for 3D glossy look)
-	var shine_pos := Vector2(-radius * 0.32, -radius * 0.34).rotated(-rotation)
-	draw_circle(shine_pos, radius * 0.28, Color(1.0, 1.0, 1.0, 0.78))
-	var shine_pos2 := Vector2(-radius * 0.12, -radius * 0.52).rotated(-rotation)
-	draw_circle(shine_pos2, radius * 0.12, Color(1.0, 1.0, 1.0, 0.55))
+	var main := GameColors.get_main_color(color_type)
+	var dark := GameColors.get_dark_color(color_type)
+	var light := GameColors.get_light_color(color_type)
+	main = main.lerp(Color.WHITE, _dye_flash * 0.65)
+	for i in range(_trail_points.size()):
+		var fade := 1.0 - float(i) / float(_trail_points.size())
+		draw_circle(to_local(_trail_points[i]), radius * fade * 0.7, Color(main, fade * 0.18))
+	draw_circle(Vector2(1, 4).rotated(-rotation), radius + 1, Color(0, 0, 0, 0.32))
+	draw_circle(Vector2.ZERO, radius, dark.darkened(0.2))
+	# Small layered discs create a soft enamel gradient without textures.
+	for step in range(10):
+		var t := float(step) / 9.0
+		draw_circle(Vector2(-1, -2).rotated(-rotation) * t, (radius - 1.4) * (1.0 - t * 0.42), main.lerp(light, t * 0.55))
+	draw_arc(Vector2.ZERO, radius - 2, PI * 1.08 - rotation, PI * 1.8 - rotation, 20, Color(light, 0.8), 1.5, true)
+	GameColors.draw_color_emblem(self, Vector2(0, 1), radius * 0.9, color_type, Color(dark.darkened(0.25), 0.9))
+	draw_circle(Vector2(-radius * 0.3, -radius * 0.4).rotated(-rotation), radius * 0.18, Color(1, 1, 1, 0.88))

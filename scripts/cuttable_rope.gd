@@ -91,32 +91,35 @@ func _process(delta: float) -> void:
 		queue_redraw()
 
 func _draw() -> void:
-	var rope_dark := Color(0.48, 0.30, 0.14)
-	var rope_main := Color(0.92, 0.72, 0.38)
-	var rope_highlight := Color(1.0, 0.90, 0.62)
+	var rope_dark := Color(0.42, 0.26, 0.10)
+	var rope_main := Color("e9b76f")
+	var rope_highlight := Color("ffe1a8")
 
-	# Top ceiling mount ring
-	draw_circle(Vector2.ZERO, 9.0, Color(0.22, 0.26, 0.36))
-	draw_circle(Vector2.ZERO, 5.5, Color(0.75, 0.82, 0.94))
+	draw_circle(Vector2(0, 2), 10.5, Color(0.0, 0.0, 0.0, 0.35))
+	draw_circle(Vector2.ZERO, 10.0, Color(0.20, 0.25, 0.36))
+	draw_arc(Vector2.ZERO, 10.0, 0.0, TAU, 18, Color(0.55, 0.68, 0.88), 2.0, true)
+	draw_circle(Vector2.ZERO, 4.5, Color(0.82, 0.90, 1.0))
 
 	if not is_cut:
 		var end_local := to_local(get_end_global())
-		draw_line(Vector2.ZERO, end_local, rope_dark, 8.0, true)
-		draw_line(Vector2.ZERO, end_local, rope_main, 4.5, true)
+		draw_line(Vector2(2, 2), end_local + Vector2(2, 2), Color(0.0, 0.0, 0.0, 0.28), 8.0, true)
+		draw_line(Vector2.ZERO, end_local, rope_dark, 8.5, true)
+		draw_line(Vector2.ZERO, end_local, rope_main, 5.0, true)
 
-		# Braided fiber ticks along rope
 		var dist := end_local.length()
 		var dir := end_local.normalized()
 		var perp := Vector2(-dir.y, dir.x)
 		var d := 12.0
 		while d < dist - 10.0:
 			var pt := dir * d
-			draw_line(pt - perp * 3.0 + dir * 2.0, pt + perp * 3.0 - dir * 2.0, rope_highlight, 1.8, true)
-			d += 11.0
+			draw_line(pt - perp * 3.2 + dir * 2.0, pt + perp * 3.2 - dir * 2.0, rope_highlight, 1.8, true)
+			d += 10.0
 
-		# Bottom attachment clamp
-		draw_circle(end_local, 6.5, Color(0.28, 0.32, 0.42))
-		draw_hint_badge(end_local * 0.5 + Vector2(22.0, 0.0))
+		draw_circle(end_local, 6.5, Color(0.26, 0.32, 0.44))
+		draw_circle(end_local, 3.0, Color(0.76, 0.84, 0.96))
+
+		draw_cut_cue(end_local * 0.5, perp, 15.0)
+		draw_hint_badge(end_local * 0.5 + Vector2(24.0, 0.0))
 	else:
 		var alpha := 1.0 - _recoil_t
 		if alpha > 0.02:

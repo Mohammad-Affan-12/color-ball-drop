@@ -276,7 +276,6 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	draw_rect(Rect2(18.0, 126.0, 684.0, 1094.0), Color(0.24, 0.30, 0.44, 0.35), false, 2.0)
 	var font := ThemeDB.fallback_font
 	if font != null:
 		for item in _floating_texts:

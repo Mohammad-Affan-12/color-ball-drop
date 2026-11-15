@@ -57,56 +57,17 @@ func _update_target(lerp_weight: float) -> void:
 func _draw() -> void:
 	if not active:
 		return
-	var font := ThemeDB.fallback_font
-
-	if level_controller != null and level_controller.level_number == 1 and _has_target:
-		var local_c := to_local(_display_center)
-		var phase := fmod(_anim_t, 1.0)
-		var p_start := local_c + Vector2(-52.0, 0.0)
-		var p_end := local_c + Vector2(52.0, 0.0)
-		var finger_pos := p_start.lerp(p_end, smoothstep(0.08, 0.88, phase))
-		var alpha := sin(phase * PI)
-
-		# Target pulsing ring
-		var pulse_r := 28.0 + sin(_anim_t * 4.0) * 4.0
-		draw_arc(local_c, pulse_r, 0.0, TAU, 28, Color(1.0, 0.92, 0.28, 0.65), 3.0, true)
-
-		# Dashed swipe guide path
-		draw_dashed_line(p_start, p_end, Color(0.4, 0.95, 1.0, 0.65), 3.0, 8.0)
-
-		# Animated swipe trail behind pointer
-		draw_line(p_start, finger_pos, Color(0.35, 0.95, 1.0, alpha * 0.78), 6.0, true)
-
-		# Glowing pointer circle
-		draw_circle(finger_pos, 14.0, Color(0.15, 0.88, 1.0, alpha * 0.45))
-		draw_circle(finger_pos, 8.5, Color(1.0, 1.0, 1.0, alpha * 0.95))
-
-		if font != null:
-			var pill_rect := Rect2(local_c.x - 84.0, local_c.y - 56.0, 168.0, 26.0)
-			draw_rect(pill_rect, Color(0.08, 0.12, 0.22, 0.88), true)
-			draw_rect(pill_rect, Color(0.38, 0.88, 1.0, 0.8), false, 1.5)
-			draw_string(
-				font,
-				Vector2(local_c.x - 84.0, local_c.y - 38.0),
-				"SWIPE ACROSS TO CUT",
-				HORIZONTAL_ALIGNMENT_CENTER,
-				168.0,
-				13,
-				Color(1.0, 0.96, 0.55)
-			)
-	elif not contextual_tip.is_empty() and _anim_t < 6.0:
-		if font != null:
-			var fade := clampf(6.0 - _anim_t, 0.0, 1.0)
-			var lp := to_local(contextual_pos)
-			var rect := Rect2(lp.x - 160.0, lp.y - 18.0, 320.0, 30.0)
-			draw_rect(rect, Color(0.08, 0.12, 0.22, 0.86 * fade), true)
-			draw_rect(rect, Color(1.0, 0.86, 0.32, 0.75 * fade), false, 1.5)
-			draw_string(
-				font,
-				Vector2(lp.x - 156.0, lp.y + 2.0),
-				contextual_tip,
-				HORIZONTAL_ALIGNMENT_CENTER,
-				312.0,
-				14,
-				Color(1.0, 0.96, 0.65, fade)
-			)
+	if level_controller == null or level_controller.level_number != 1 or not _has_target:
+		return
+	var center := to_local(_display_center)
+	var phase := fmod(_anim_t, 1.0)
+	var start := center + Vector2(-52, 0)
+	var end := center + Vector2(52, 0)
+	var finger := start.lerp(end, smoothstep(0.08, 0.88, phase))
+	var alpha := sin(phase * PI)
+	draw_dashed_line(start, end, Color(0.45, 0.91, 0.80, 0.5), 2, 8)
+	draw_circle(finger, 12, Color(0.45, 0.91, 0.80, alpha * 0.25))
+	draw_circle(finger, 6, Color(1, 1, 1, alpha * 0.9))
+	var text_style := UiThemeHelper.create_pill_style(Color("172b42"), Color("486557"))
+	draw_style_box(text_style, Rect2(160, 218, 400, 48))
+	draw_string(ThemeDB.fallback_font, Vector2(160, 251), "Swipe across gold to cut", HORIZONTAL_ALIGNMENT_CENTER, 400, 26, UiThemeHelper.GOLD)

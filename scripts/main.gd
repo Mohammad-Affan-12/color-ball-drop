@@ -20,7 +20,6 @@ var save_manager: SaveManager = null
 var analytics: AnalyticsService = null
 var ad_service: AdService = null
 var billing_service: BillingService = null
-
 var is_daily_challenge_mode: bool = false
 var _shake_strength: float = 0.0
 var _bg_time: float = 0.0
@@ -29,8 +28,8 @@ var _is_paused: bool = false
 var _camera: Camera2D = null
 var _base_camera_offset: Vector2 = Vector2.ZERO
 var _bonus_claimed_this_win: bool = false
-
-# Modular UI Controllers
+var save_path: String = SaveManager.DEFAULT_SAVE_PATH
+var _menu_was_open: bool = false
 var _ui_layer: CanvasLayer
 var _hud: GameplayHud
 var _results_modal: ResultsModal
@@ -39,8 +38,6 @@ var _home_modal: HomeModal
 var _level_select_modal: LevelSelectModal
 var _cosmetics_modal: CosmeticsModal
 var _settings_modal: SettingsModal
-
-# Compatibility references for automated test suite and scene inspection
 var _modal_backdrop: ColorRect
 var _modal_header: Label
 var _modal_body: Label
@@ -53,7 +50,7 @@ func _ready() -> void:
 	_camera.enabled = true
 	add_child(_camera)
 
-	save_manager = SaveManager.new()
+	save_manager = SaveManager.new(save_path)
 	analytics = AnalyticsService.new()
 	analytics.consent_granted = save_manager.privacy_consent_granted
 	analytics.log_event("session_start", {"version": APP_VERSION})
@@ -98,47 +95,35 @@ func _build_ui() -> void:
 
 	_hud = GameplayHud.new()
 	_hud.build(_ui_layer, open_home_screen, _on_hint_pressed, _on_restart_pressed, toggle_pause, open_level_select, func(lvl_idx: int) -> void:
-		sfx.play("ui_click")
-		is_daily_challenge_mode = false
-		load_level(lvl_idx)
+		sfx.play("ui_click"); is_daily_challenge_mode = false; load_level(lvl_idx)
 	)
 
 	_results_modal = ResultsModal.new()
 	_results_modal.build(_ui_layer, _on_restart_pressed, _on_next_level_pressed, _on_bonus_coins_ad_pressed, open_level_select)
-	_modal_backdrop = _results_modal.backdrop
-	_modal_header = _results_modal.header_label
-	_modal_body = _results_modal.body_label
+	_modal_backdrop = _results_modal.backdrop; _modal_header = _results_modal.header_label; _modal_body = _results_modal.body_label
 
 	_pause_modal = PauseModal.new()
 	_pause_modal.build(_ui_layer, toggle_pause, _on_toggle_sfx_pressed, _on_toggle_music_pressed, _on_toggle_haptics_pressed,
-		func() -> void:
-			_set_paused_state(false)
-			_on_restart_pressed(),
-		func() -> void:
-			_set_paused_state(false)
-			open_home_screen()
+		func() -> void: _set_paused_state(false); _on_restart_pressed(),
+		func() -> void: _set_paused_state(false); open_home_screen(),
+		func() -> void: _set_paused_state(false); open_level_select()
 	)
 	_pause_backdrop = _pause_modal.backdrop
 
 	_home_modal = HomeModal.new()
 	_home_modal.build(_ui_layer,
-		func() -> void:
-			sfx.play("ui_click")
-			is_daily_challenge_mode = false
-			load_level(save_manager.highest_unlocked_level),
+		func() -> void: sfx.play("ui_click"); is_daily_challenge_mode = false; load_level(save_manager.highest_unlocked_level),
 		open_level_select, start_daily_challenge, open_cosmetics_modal, open_settings_modal,
 		_on_purchase_remove_ads_pressed, func() -> void: sfx.play("ui_click")
 	)
 
 	_level_select_modal = LevelSelectModal.new()
-	_level_select_modal.build(_ui_layer, func(target_lvl: int) -> void:
-		is_daily_challenge_mode = false
-		load_level(target_lvl, false),
+	_level_select_modal.build(_ui_layer, func(target_lvl: int) -> void: is_daily_challenge_mode = false; load_level(target_lvl, false),
 		func() -> void: sfx.play("ui_click")
 	)
 
 	_cosmetics_modal = CosmeticsModal.new()
-	_cosmetics_modal.build(_ui_layer, func() -> void: sfx.play("ui_click"))
+	_cosmetics_modal.build(_ui_layer, func() -> void: sfx.play("ui_click"), _on_cosmetic_action)
 
 	_settings_modal = SettingsModal.new()
 	_settings_modal.build(_ui_layer, APP_VERSION, _on_toggle_sfx_pressed, _on_toggle_music_pressed, _on_toggle_haptics_pressed,
@@ -164,27 +149,18 @@ func _update_viewport_layout() -> void:
 	var vp_size := get_viewport_rect().size
 	if vp_size.x <= 0.0 or vp_size.y <= 0.0:
 		return
-	var extra_x := maxf(0.0, (vp_size.x - BASE_WIDTH) * 0.5)
-	var extra_y := maxf(0.0, (vp_size.y - BASE_HEIGHT) * 0.5)
-	_base_camera_offset = Vector2(-extra_x, -extra_y)
-	if _camera != null and _shake_strength <= 0.1:
-		_camera.offset = _base_camera_offset
+	var insets := MobileLayout.safe_insets(get_viewport())
+	var framing := MobileLayout.puzzle_transform(vp_size, insets)
+	_camera.zoom = Vector2.ONE * framing.x.x
+	_base_camera_offset = -framing.origin / framing.x.x
+	_camera.offset = _base_camera_offset
+	_camera.force_update_scroll()
+	if _hud != null:
+		_hud.layout(insets)
 
-	var safe_rect := DisplayServer.get_display_safe_area()
-	var safe_top := maxf(12.0, float(safe_rect.position.y) * 0.5) if (safe_rect.size.y > 0 and safe_rect.position.y > 0) else 12.0
-	if _hud != null and _hud.top_bar != null:
-		_hud.top_bar.position = Vector2(extra_x + 12.0, extra_y + safe_top)
-
-	for bd in [_results_modal.backdrop, _pause_modal.backdrop, _home_modal.backdrop, _level_select_modal.backdrop, _cosmetics_modal.backdrop, _settings_modal.backdrop, _results_modal.splash_backdrop]:
-		if bd != null:
-			bd.size = Vector2(maxf(vp_size.x, BASE_WIDTH), maxf(vp_size.y, BASE_HEIGHT))
-
-	_results_modal.panel.position = Vector2(extra_x + 80.0, extra_y + 390.0)
-	_pause_modal.panel.position = Vector2(extra_x + 110.0, extra_y + 360.0)
-	_home_modal.panel.position = Vector2(extra_x + 70.0, extra_y + 210.0)
-	_level_select_modal.panel.position = Vector2(extra_x + 36.0, extra_y + 120.0)
-	_cosmetics_modal.panel.position = Vector2(extra_x + 46.0, extra_y + 130.0)
-	_settings_modal.panel.position = Vector2(extra_x + 64.0, extra_y + 170.0)
+	for modal_panel in [_results_modal.panel, _pause_modal.panel, _home_modal.panel, _level_select_modal.panel, _cosmetics_modal.panel, _settings_modal.panel]:
+		if modal_panel != null:
+			MobileLayout.fit_modal(modal_panel, vp_size, insets)
 
 func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 	var target_idx := clampi(level_idx, 1, LevelData.TOTAL_LEVELS)
@@ -195,8 +171,9 @@ func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 	current_level_index = target_idx
 	_bonus_claimed_this_win = false
 	_set_paused_state(false)
-	_results_modal.backdrop.visible = false
-	_level_select_modal.backdrop.visible = false
+	for modal in [_results_modal, _home_modal, _level_select_modal, _cosmetics_modal, _settings_modal]:
+		modal.backdrop.hide()
+	_menu_was_open = false
 	slice_controller.enabled = true
 
 	if current_level != null and is_instance_valid(current_level):
@@ -226,10 +203,11 @@ func load_level(level_idx: int, force_unlocked: bool = true) -> void:
 	if analytics != null:
 		analytics.log_event("level_start", {"level": current_level_index, "daily_challenge": is_daily_challenge_mode})
 
-	_hud.title_label.text = ("Daily (%s): %s" % [DailyChallenge.get_today_date_string(), current_level.level_title]) if is_daily_challenge_mode else current_level.level_title
-	_hud.subtitle_label.text = current_level.level_subtitle
-	_hud.refresh_counters(save_manager, current_level)
-	_hud.update_quick_level_buttons(save_manager, current_level_index)
+	_hud.show_level(current_level_index, current_level.level_title, is_daily_challenge_mode)
+	if not current_level.tutorial_tip.is_empty():
+		_hud.subtitle_label.text = current_level.tutorial_tip
+	_hud.update_moves_display(current_level.moves_used, current_level.par_moves)
+	_hud.set_hint_active(_hints_active)
 
 func _on_object_sliced(item: CuttableBase, _pt: Vector2, _cuts_in_swipe: int = 1) -> void:
 	sfx.play("slice_rope" if item is CuttableRope else "slice_beam", randf_range(0.95, 1.08))
@@ -252,14 +230,14 @@ func _on_mechanic_sfx_requested(sound_name: String) -> void:
 	sfx.play(sound_name, 1.0)
 
 func _on_moves_updated(moves_used: int, par_moves: int) -> void:
-	_hud.moves_label.text = "Cuts: %d/%d" % [moves_used, par_moves]
+	_hud.update_moves_display(moves_used, par_moves)
 
 func _on_chain_reaction() -> void:
 	sfx.play("chain", 1.0)
 	_shake_strength = 8.0
 
 func _on_progress_updated(collected: int, total_req: int) -> void:
-	_hud.progress_label.text = "Balls: %d/%d" % [collected, total_req]
+	_hud.update_progress_display(collected, total_req)
 	if collected > 0:
 		sfx.play("collect", 0.95 + float(collected) * 0.05)
 
@@ -275,9 +253,7 @@ func _on_level_won(lvl_idx: int) -> void:
 			coins_awarded += save_manager.record_daily_challenge_win(DailyChallenge.get_today_date_string())
 	if analytics != null:
 		analytics.log_event("level_complete", {"level": lvl_idx, "stars": earned_stars, "moves": moves_taken, "coins_awarded": coins_awarded})
-	_hud.refresh_counters(save_manager, current_level)
-	_hud.update_quick_level_buttons(save_manager, current_level_index)
-	_results_modal.show_win(self, lvl_idx, earned_stars, coins_awarded, moves_taken)
+	_results_modal.show_win(self, lvl_idx, earned_stars, coins_awarded, moves_taken, save_manager)
 
 func _on_level_failed(lvl_idx: int, reason: String) -> void:
 	slice_controller.enabled = false
@@ -300,15 +276,14 @@ func _on_bonus_coins_ad_pressed() -> void:
 		sfx.play("star")
 		if analytics != null:
 			analytics.log_event("rewarded_ad_completed", {"placement": "win_bonus_coins"})
-		_results_modal.bonus_btn.text = "Bonus Claimed (+25 💰)"
+		_results_modal.bonus_btn.text = "Bonus Claimed (+25 coins)"
 		_results_modal.bonus_btn.disabled = true
-		_hud.refresh_counters(save_manager, current_level)
 	)
 
 func _on_hint_pressed() -> void:
 	sfx.play("ui_click")
 	_hints_active = not _hints_active
-	_hud.hint_btn.text = "Hint: ON" if _hints_active else "Hint"
+	_hud.set_hint_active(_hints_active)
 	if _hints_active and analytics != null:
 		analytics.log_event("hint_used", {"level": current_level_index})
 	if current_level != null and is_instance_valid(current_level):
@@ -341,7 +316,7 @@ func _set_paused_state(paused: bool) -> void:
 		_pause_modal.backdrop.visible = _is_paused
 	if slice_controller != null and _results_modal != null:
 		slice_controller.enabled = (not _is_paused) and (not _results_modal.backdrop.visible)
-	if _pause_modal != null:
+	if _pause_modal != null and sfx != null and slice_controller != null:
 		_pause_modal.refresh(sfx, slice_controller)
 
 func open_home_screen() -> void:
@@ -365,8 +340,24 @@ func open_level_select() -> void:
 func open_cosmetics_modal() -> void:
 	sfx.play("ui_click")
 	_set_paused_state(false)
-	_cosmetics_modal.refresh(save_manager, slice_controller, sfx, analytics, func() -> void: _hud.refresh_counters(save_manager, current_level))
+	_cosmetics_modal.refresh(save_manager)
 	_cosmetics_modal.backdrop.visible = true
+
+func _on_cosmetic_action(trail_id: String) -> void:
+	if save_manager == null:
+		return
+	if save_manager.owned_cosmetics.has(trail_id):
+		save_manager.equip_cosmetic(trail_id)
+		slice_controller.current_trail_id = trail_id
+		sfx.play("ui_click")
+	elif save_manager.unlock_cosmetic_with_coins(trail_id):
+		slice_controller.current_trail_id = trail_id
+		sfx.play("star")
+		if analytics != null:
+			analytics.log_event("cosmetic_unlocked", {"id": trail_id})
+	else:
+		sfx.play("reject")
+	_cosmetics_modal.refresh(save_manager)
 
 func open_settings_modal() -> void:
 	sfx.play("ui_click")
@@ -397,13 +388,32 @@ func _on_reset_progress_pressed() -> void:
 	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_sfx_pressed() -> void:
-	_settings_modal.toggle_sfx(sfx, save_manager, _pause_modal, slice_controller)
+	sfx.muted = not sfx.muted
+	if save_manager != null:
+		save_manager.sfx_muted = sfx.muted
+		save_manager.save_data()
+	if not sfx.muted:
+		sfx.play("ui_click")
+	_pause_modal.refresh(sfx, slice_controller)
+	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_music_pressed() -> void:
-	_settings_modal.toggle_music(sfx, save_manager, _pause_modal, slice_controller)
+	sfx.music_muted = not sfx.music_muted
+	if save_manager != null:
+		save_manager.music_muted = sfx.music_muted
+		save_manager.save_data()
+	sfx.play("ui_click")
+	_pause_modal.refresh(sfx, slice_controller)
+	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_haptics_pressed() -> void:
-	_settings_modal.toggle_haptics(sfx, save_manager, _pause_modal, slice_controller)
+	slice_controller.vibration_enabled = not slice_controller.vibration_enabled
+	if save_manager != null:
+		save_manager.vibration_enabled = slice_controller.vibration_enabled
+		save_manager.save_data()
+	sfx.play("ui_click")
+	_pause_modal.refresh(sfx, slice_controller)
+	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _on_toggle_colorblind_pressed() -> void:
 	if save_manager == null:
@@ -450,27 +460,37 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_on_next_level_pressed()
 
 func _process(delta: float) -> void:
+	_sync_menu_state()
 	_bg_time += delta
 	if _shake_strength > 0.1:
 		_shake_strength = lerpf(_shake_strength, 0.0, clampf(delta * 10.0, 0.0, 1.0))
 		_camera.offset = _base_camera_offset + Vector2(randf_range(-_shake_strength, _shake_strength), randf_range(-_shake_strength, _shake_strength))
 	elif _camera != null and _camera.offset != _base_camera_offset:
 		_camera.offset = _base_camera_offset
-	queue_redraw()
+
+func _menu_open() -> bool:
+	for modal in [_home_modal, _level_select_modal, _cosmetics_modal, _settings_modal]:
+		if modal.backdrop.visible:
+			return true
+	return false
+
+func _sync_menu_state() -> void:
+	var menu_open := _menu_open()
+	_hud.root.visible = not menu_open
+	if menu_open != _menu_was_open:
+		_menu_was_open = menu_open
+		get_tree().paused = menu_open or _is_paused
+		slice_controller.enabled = not menu_open and not _is_paused and not _results_modal.backdrop.visible
 
 func _draw() -> void:
-	var ch: int = clampi(int(ceil(float(current_level_index) / 20.0)), 1, 5)
-	var bg_colors := {1: Color(0.06, 0.08, 0.14), 2: Color(0.05, 0.10, 0.15), 3: Color(0.08, 0.07, 0.15), 4: Color(0.06, 0.09, 0.13), 5: Color(0.09, 0.06, 0.13)}
-	draw_rect(Rect2(-600, -600, 1920, 2560), bg_colors.get(ch, Color(0.06, 0.08, 0.14)), true)
-	draw_rect(Rect2(0, 0, BASE_WIDTH, BASE_HEIGHT), Color(0.18, 0.28, 0.44, 0.35), false, 2.0)
-
-	var grid_col := Color(0.14, 0.20, 0.32, 0.25)
-	var step := 60.0
-	var x := 0.0
-	while x <= BASE_WIDTH:
-		draw_line(Vector2(x, 0), Vector2(x, BASE_HEIGHT), grid_col, 1.0)
-		x += step
-	var y := fmod(_bg_time * 12.0, step)
-	while y <= BASE_HEIGHT:
-		draw_line(Vector2(0, y), Vector2(BASE_WIDTH, y), grid_col, 1.0)
-		y += step
+	# Static, quiet background keeps attention on the moving cascade.
+	draw_rect(Rect2(-2000, -2000, 5000, 5000), Color("0b1626"))
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = Color("101f32")
+	plate.border_color = Color("22394f")
+	plate.set_border_width_all(1)
+	plate.set_corner_radius_all(30)
+	draw_style_box(plate, Rect2(22, 142, 676, 1032))
+	for x in range(60, 700, 40):
+		for y in range(180, 1150, 40):
+			draw_circle(Vector2(x, y), 1.2, Color(0.42, 0.58, 0.68, 0.1))

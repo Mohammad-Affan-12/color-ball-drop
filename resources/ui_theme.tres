@@ -1,0 +1,16 @@
+[gd_resource type="Theme" format=3]
+
+[resource]
+default_font_size = 30
+Button/colors/font_color = Color(0.94, 0.97, 1, 1)
+Button/colors/font_disabled_color = Color(0.5, 0.59, 0.69, 1)
+Button/colors/font_hover_color = Color(1, 1, 1, 1)
+Button/colors/font_pressed_color = Color(0.7, 0.94, 0.87, 1)
+Button/constants/outline_size = 0
+Button/constants/h_separation = 14
+Button/font_sizes/font_size = 30
+Label/colors/font_color = Color(0.94, 0.97, 1, 1)
+Label/constants/outline_size = 0
+Label/font_sizes/font_size = 30
+VBoxContainer/constants/separation = 18
+HBoxContainer/constants/separation = 16

@@ -1,0 +1,7 @@
+{
+  "captures": [],
+  "checks": 13555,
+  "engine": "4.7.2-stable (official)",
+  "failures": [],
+  "testing": "Desktop Godot renderer / automated viewport previews. No physical device or mobile emulator testing."
+}

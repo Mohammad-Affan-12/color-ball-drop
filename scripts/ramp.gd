@@ -99,32 +99,21 @@ func _rebuild_shapes() -> void:
 		add_child(_right_lip_col)
 
 func _draw() -> void:
-	var hl := length * 0.5
+	var half := length * 0.5
 	var r := thickness * 0.5
-	var base_dark := Color(0.14, 0.17, 0.25)
-	var base_fill := Color(0.22, 0.27, 0.38)
-
-	# Draw optional lips
-	if left_lip_height > 1.0:
-		draw_rect(Rect2(-hl - r * 0.5, -left_lip_height, thickness, left_lip_height), base_dark, true)
-		draw_rect(Rect2(-hl - r * 0.5 + 2.0, -left_lip_height + 2.0, thickness - 4.0, left_lip_height - 2.0), base_fill, true)
-
-	if right_lip_height > 1.0:
-		draw_rect(Rect2(hl - r * 1.5, -right_lip_height, thickness, right_lip_height), base_dark, true)
-		draw_rect(Rect2(hl - r * 1.5 + 2.0, -right_lip_height + 2.0, thickness - 4.0, right_lip_height - 2.0), base_fill, true)
-
-	# End caps and body
-	draw_circle(Vector2(-hl, 0.0), r, base_dark)
-	draw_circle(Vector2(hl, 0.0), r, base_dark)
-	draw_rect(Rect2(-hl, -r, length, thickness), base_dark, true)
-
-	draw_circle(Vector2(-hl, 0.0), r - 2.0, base_fill)
-	draw_circle(Vector2(hl, 0.0), r - 2.0, base_fill)
-	draw_rect(Rect2(-hl, -r + 2.0, length, thickness - 4.0), base_fill, true)
-
-	# Top neon edge stripe
-	draw_line(Vector2(-hl, -r + 2.5), Vector2(hl, -r + 2.5), accent_color, 3.0, true)
-
-	# Pivot bolts at ends
-	draw_circle(Vector2(-hl, 0.0), 3.5, accent_color)
-	draw_circle(Vector2(hl, 0.0), 3.5, accent_color)
+	var body := Color("34465b")
+	var edge := Color("6e8499").lerp(accent_color, 0.2)
+	draw_line(Vector2(-half, 4), Vector2(half, 4), Color(0, 0, 0, 0.28), thickness + 3, true)
+	draw_circle(Vector2(-half, 0), r, body)
+	draw_circle(Vector2(half, 0), r, body)
+	draw_line(Vector2(-half, 0), Vector2(half, 0), body, thickness, true)
+	draw_line(Vector2(-half, -r + 2), Vector2(half, -r + 2), edge, 2.5, true)
+	for side: float in [-1.0, 1.0]:
+		var height: float = left_lip_height if side < 0.0 else right_lip_height
+		var x: float = side * (half - r * 0.5)
+		if height > 1:
+			draw_line(Vector2(x, 0), Vector2(x, -height + r), body, thickness, true)
+			draw_circle(Vector2(x, -height + r), r, body)
+			draw_line(Vector2(x - side * 3, -r), Vector2(x - side * 3, -height + r), edge, 2.5, true)
+		draw_circle(Vector2(side * half, 0), 3.0, Color("a7bacb"))
+		draw_line(Vector2(side * half - 1.5, 0), Vector2(side * half + 1.5, 0), Color("22334a"), 1.5, true)

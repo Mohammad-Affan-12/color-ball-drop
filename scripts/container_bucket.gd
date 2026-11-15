@@ -49,7 +49,6 @@ func _build_physics() -> void:
 	var hh := bucket_height * 0.5
 	var wall_thick := 10.0
 
-	# Left flared wall + vertical wall + bottom floor + right vertical wall + right flared wall
 	var poly_left := CollisionPolygon2D.new()
 	poly_left.polygon = PackedVector2Array([
 		Vector2(-hw - 14.0, -hh - 14.0),
@@ -113,9 +112,7 @@ func _on_body_entered(body: Node) -> void:
 	if not (body is PuzzleBall):
 		return
 	var ball: PuzzleBall = body as PuzzleBall
-	if ball.is_collected:
-		return
-	if ball.color_type == GameColors.ColorType.STEEL:
+	if ball.is_collected or ball.color_type == GameColors.ColorType.STEEL:
 		return
 
 	ball.is_collected = true
@@ -159,85 +156,32 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _draw() -> void:
-	var main_col := GameColors.get_main_color(color_type)
-	var dark_col := GameColors.get_dark_color(color_type)
-	var light_col := GameColors.get_light_color(color_type)
-
-	if _error_flash > 0.0:
-		main_col = main_col.lerp(Color(1.0, 0.1, 0.1), _error_flash)
-
+	var main := GameColors.get_main_color(color_type).lerp(Color.WHITE, 0.12)
+	var light := GameColors.get_light_color(color_type)
+	main = main.lerp(Color("ff677f"), _error_flash)
 	var hw := bucket_width * 0.5
 	var hh := bucket_height * 0.5
-
-	# Background dark glass interior
-	var bg_rect := Rect2(-hw + 3.0, -hh + 2.0, bucket_width - 6.0, bucket_height - 4.0)
-	draw_rect(bg_rect, Color(dark_col.r * 0.35, dark_col.g * 0.35, dark_col.b * 0.35, 0.78), true)
-
-	# Liquid fill level
+	var shell := StyleBoxFlat.new()
+	shell.bg_color = Color("172b40")
+	shell.set_corner_radius_all(14)
+	shell.shadow_color = Color(0, 0, 0, 0.25)
+	shell.shadow_size = 5
+	draw_style_box(shell, Rect2(-hw - 6, -hh, bucket_width + 12, bucket_height + 10))
 	if _display_fill > 0.01:
-		var fill_h := (bucket_height - 10.0) * _display_fill
-		var fill_top := hh - 4.0 - fill_h
-		var fill_rect := Rect2(-hw + 5.0, fill_top, bucket_width - 10.0, fill_h)
-		var fill_col := Color(main_col.r, main_col.g, main_col.b, 0.55)
-		draw_rect(fill_rect, fill_col, true)
-		# Bright surface line
-		draw_line(
-			Vector2(-hw + 5.0, fill_top),
-			Vector2(hw - 5.0, fill_top),
-			light_col,
-			3.0,
-			true
-		)
-
-	# Outer glow if full
-	if is_satisfied():
-		var glow_alpha := 0.25 + 0.12 * sin(_wave_time)
-		draw_rect(
-			Rect2(-hw - 6.0, -hh - 4.0, bucket_width + 12.0, bucket_height + 10.0),
-			Color(light_col.r, light_col.g, light_col.b, glow_alpha),
-			false,
-			4.0
-		)
-
-	# Container U-frame walls with flared funnel lips
-	var rim_pts := PackedVector2Array([
-		Vector2(-hw - 12.0, -hh - 12.0),
-		Vector2(-hw, -hh),
-		Vector2(-hw, hh),
-		Vector2(hw, hh),
-		Vector2(hw, -hh),
-		Vector2(hw + 12.0, -hh - 12.0)
-	])
-	draw_polyline(rim_pts, dark_col, 11.0, true)
-	draw_polyline(rim_pts, main_col, 6.5, true)
-
-	# Top inner funnel chevrons
-	var arrow_y := -hh - 8.0 + sin(_wave_time) * 2.5
-	draw_line(Vector2(-10, arrow_y - 4), Vector2(0, arrow_y + 4), light_col, 2.5, true)
-	draw_line(Vector2(10, arrow_y - 4), Vector2(0, arrow_y + 4), light_col, 2.5, true)
-
-	# Draw counter badge and color name
+		var height := (bucket_height - 8) * _display_fill
+		draw_rect(Rect2(-hw + 7, hh - height, bucket_width - 14, height), Color(main, 0.23))
+		draw_line(Vector2(-hw + 7, hh - height), Vector2(hw - 7, hh - height), Color(light, 0.75), 2, true)
+	var rim := PackedVector2Array([
+		Vector2(-hw - 12, -hh - 12), Vector2(-hw, -hh),
+		Vector2(-hw, hh), Vector2(hw, hh), Vector2(hw, -hh), Vector2(hw + 12, -hh - 12)])
+	draw_polyline(rim, Color("2e4358"), 12, true)
+	draw_polyline(rim, main, 6, true)
+	draw_line(Vector2(-hw + 9, -hh + 10), Vector2(-hw + 9, hh - 10), Color(1, 1, 1, 0.12), 3, true)
+	var arrow := Vector2(0, -hh - 14)
+	draw_polyline(PackedVector2Array([arrow + Vector2(-7, -5), arrow, arrow + Vector2(7, -5)]), light, 2, true)
 	var font := ThemeDB.fallback_font
-	if font != null:
-		var count_str := "%d / %d" % [collected_count, required_count]
-		if is_satisfied():
-			count_str += " ✓"
-		draw_string(
-			font,
-			Vector2(-hw, 6.0),
-			count_str,
-			HORIZONTAL_ALIGNMENT_CENTER,
-			bucket_width,
-			20,
-			Color.WHITE
-		)
-		var cname := "%s %s" % [GameColors.get_color_symbol(color_type), GameColors.get_color_name(color_type)]
-		draw_string(
-			font,
-			Vector2(-hw, 28.0),
-			cname,
-			HORIZONTAL_ALIGNMENT_CENTER,
-			bucket_width,
-			13,
-			light_col
-		)
+	draw_string(font, Vector2(-hw, 8), "%d / %d" % [collected_count, required_count], HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 30, UiThemeHelper.TEXT)
+	GameColors.draw_color_emblem(self, Vector2(0, -23), 19, color_type, light)
+	draw_string(font, Vector2(-hw, hh + 39), GameColors.get_color_name(color_type), HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 24, light)
+	if is_satisfied():
+		draw_polyline(PackedVector2Array([Vector2(-8, -20), Vector2(-2, -14), Vector2(10, -28)]), UiThemeHelper.TEAL, 3, true)

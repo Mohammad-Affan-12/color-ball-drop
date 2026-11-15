@@ -6,6 +6,7 @@ func _init() -> void:
 	call_deferred("_run_tests")
 
 func _run_tests() -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path("res://.test-user"))
 	print("=== Starting Cut & Cascade Commercial Verification Suite ===")
 
 	# 1. Verify all component scenes load cleanly
@@ -31,6 +32,7 @@ func _run_tests() -> void:
 		return
 
 	_main_node = main_packed.instantiate()
+	_main_node.save_path = "res://.test-user/regression_save.cfg"
 	root.add_child(_main_node)
 	await process_frame
 	await physics_frame
@@ -114,7 +116,7 @@ func _verify_component_scenes() -> bool:
 
 func _verify_save_manager_and_economy() -> bool:
 	print("--- Testing SaveManager, Checksum, Backup Recovery & Cosmetics ---")
-	var test_path := "user://test_commercial_save.cfg"
+	var test_path := "res://.test-user/test_commercial_save.cfg"
 	if FileAccess.file_exists(test_path):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(test_path))
 	if FileAccess.file_exists(test_path + ".bak"):
@@ -208,7 +210,7 @@ func _verify_services_and_daily() -> bool:
 		return false
 
 	# Test BillingService SKU validation and production security gate
-	var temp_path := "user://test_billing_save.cfg"
+	var temp_path := "res://.test-user/test_billing_save.cfg"
 	var temp_sm := SaveManager.new(temp_path)
 	temp_sm.reset_to_defaults(true)
 	var billing := BillingService.new(temp_sm)
@@ -278,7 +280,26 @@ func _verify_pause_and_modals() -> bool:
 	if paused or _main_node._pause_backdrop.visible or not _main_node.slice_controller.enabled:
 		printerr("FAIL: second toggle_pause() did not resume cleanly")
 		return false
-	print("  PASS: Pause/Resume and modal states verified.")
+
+	# Verify mobile HUD touch target sizes (>= 48px) and unclipped title typography
+	var hud: GameplayHud = _main_node._hud
+	if hud.pause_btn.custom_minimum_size.y < 48 or hud.hint_btn.custom_minimum_size.y < 48 or hud.restart_btn.custom_minimum_size.y < 48:
+		printerr("FAIL: GameplayHud touch buttons are smaller than 48px height!")
+		return false
+	if hud.title_label.clip_text:
+		printerr("FAIL: GameplayHud title_label still has clip_text enabled!")
+		return false
+
+	# Verify responsive layout adaptation across portrait aspect ratios (16:9, 19.5:9, 20:9, 3:4)
+	for res in [Vector2i(540, 1170), Vector2i(720, 1600), Vector2i(768, 1024), Vector2i(720, 1280)]:
+		root.size = res
+		_main_node._update_viewport_layout()
+		await process_frame
+		if hud.top_bar.size.x <= 0 or _main_node._home_modal.panel.size.x <= 0:
+			printerr("FAIL: Invalid UI layout size at resolution %s" % str(res))
+			return false
+
+	print("  PASS: Pause/Resume, modal states, 48px+ touch targets, and multi-resolution portrait layouts verified.")
 	return true
 
 func _verify_level_solvable(lvl: int, use_real_touch: bool = false) -> bool:

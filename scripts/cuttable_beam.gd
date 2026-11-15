@@ -70,7 +70,6 @@ func check_segment_cut(world_a: Vector2, world_b: Vector2) -> Vector2:
 	var hit: Variant = Geometry2D.segment_intersects_segment(world_a, world_b, beam_a, beam_b)
 	if hit != null:
 		return hit as Vector2
-	# Also allow grazing across the thickness of the beam for comfortable mobile touch
 	var closest := Geometry2D.get_closest_points_between_segments(world_a, world_b, beam_a, beam_b)
 	if closest.size() == 2 and closest[0].distance_to(closest[1]) <= maxf(thickness * 0.95, 13.0):
 		return closest[1]
@@ -103,52 +102,36 @@ func _process(delta: float) -> void:
 func _draw() -> void:
 	var hl := length * 0.5
 	var ht := thickness * 0.5
-	var wood_dark := Color(0.55, 0.28, 0.08)
-	var wood_main := Color(0.96, 0.62, 0.18)
-	var wood_light := Color(1.0, 0.84, 0.42)
+	var wood_dark := Color("8c572b")
+	var wood_main := Color("e9b76f")
+	var wood_light := Color("ffe1a8")
 
 	if not is_cut:
-		# Outer frame
+		draw_rect(Rect2(-hl + 2.0, -ht + 3.0, length, thickness), Color(0.0, 0.0, 0.0, 0.32), true)
 		draw_rect(Rect2(-hl, -ht, length, thickness), wood_dark, true)
 		draw_rect(Rect2(-hl + 2.0, -ht + 2.0, length - 4.0, thickness - 4.0), wood_main, true)
+		draw_line(Vector2(-hl + 3.0, -ht + 3.0), Vector2(hl - 3.0, -ht + 3.0), wood_light, 2.0, true)
 
-		# Diagonal hazard/cut stripes
 		var stripe_step := 16.0
-		var x := -hl + 8.0
-		while x < hl - 8.0:
-			draw_line(
-				Vector2(x - 3.0, ht - 2.0),
-				Vector2(x + 3.0, -ht + 2.0),
-				Color(0.75, 0.38, 0.08, 0.75),
-				3.0,
-				true
-			)
+		var x := -hl + 10.0
+		while x < hl - 10.0:
+			draw_line(Vector2(x - 3.0, ht - 2.0), Vector2(x + 3.0, -ht + 2.0), Color(0.68, 0.34, 0.06, 0.78), 3.0, true)
 			x += stripe_step
 
-		# Center dotted cut guide line
-		var pulse_alpha := 0.65 + 0.3 * sin(_hint_pulse)
-		draw_line(
-			Vector2(0, -ht - 6.0),
-			Vector2(0, ht + 6.0),
-			Color(1.0, 0.95, 0.6, pulse_alpha),
-			2.2,
-			true
-		)
+		draw_rect(Rect2(-hl, -ht, 10.0, thickness), Color(0.32, 0.36, 0.48), true)
+		draw_rect(Rect2(hl - 10.0, -ht, 10.0, thickness), Color(0.32, 0.36, 0.48), true)
+		draw_circle(Vector2(-hl + 5.0, 0), 3.0, wood_light)
+		draw_circle(Vector2(hl - 5.0, 0), 3.0, wood_light)
 
-		# End bolts
-		draw_circle(Vector2(-hl + 6.0, 0), 4.0, wood_light)
-		draw_circle(Vector2(hl - 6.0, 0), 4.0, wood_light)
-
-		draw_hint_badge(Vector2(0, -ht - 18.0))
+		draw_cut_cue(Vector2.ZERO, Vector2(0.0, 1.0), ht + 9.0)
+		draw_hint_badge(Vector2(0, -ht - 20.0))
 	else:
 		var alpha := 1.0 - _cut_anim_time
 		if alpha <= 0.02:
 			return
 		var col := Color(wood_main.r, wood_main.g, wood_main.b, alpha)
-		# Left piece
 		draw_set_transform(_left_offset, _left_rot, Vector2.ONE)
 		draw_rect(Rect2(-hl, -ht, hl - 3.0, thickness), col, true)
-		# Right piece
 		draw_set_transform(_right_offset, _right_rot, Vector2.ONE)
 		draw_rect(Rect2(3.0, -ht, hl - 3.0, thickness), col, true)
 		draw_set_transform(Vector2.ZERO, 0.0, Vector2.ONE)

@@ -1,150 +1,94 @@
 class_name GameplayHud
 extends RefCounted
 
-## Single-responsibility controller for the top gameplay HUD bar.
-
+## View only: the application supplies level, objective and cut state.
+var root: Control
 var top_bar: PanelContainer
+var bottom_bar: HBoxContainer
+var level_label: Label
 var title_label: Label
 var subtitle_label: Label
 var progress_label: Label
 var moves_label: Label
-var coins_label: Label
-var stars_hud_label: Label
 var hint_btn: Button
 var restart_btn: Button
 var pause_btn: Button
-var levels_btn: Button
-var home_btn: Button
-var level_buttons: Array[Button] = []
 
-func build(
-	ui_layer: CanvasLayer,
-	on_home: Callable,
-	on_hint: Callable,
-	on_restart: Callable,
-	on_pause: Callable,
-	on_levels: Callable,
-	on_quick_level: Callable
-) -> void:
+func build(ui_layer: CanvasLayer, _home: Callable, on_hint: Callable, on_restart: Callable, on_pause: Callable, _levels: Callable, _quick_level: Callable) -> void:
+	root = Control.new()
+	root.name = "GameplayHUD"
+	root.theme = UiThemeHelper.get_shared_theme()
+	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	ui_layer.add_child(root)
+	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	top_bar = PanelContainer.new()
-	top_bar.position = Vector2(12, 12)
-	top_bar.custom_minimum_size = Vector2(696, 110)
-	var top_style := StyleBoxFlat.new()
-	top_style.bg_color = Color(0.08, 0.11, 0.19, 0.94)
-	top_style.border_color = Color(0.28, 0.48, 0.78, 0.72)
-	top_style.set_border_width_all(2)
-	top_style.set_corner_radius_all(14)
-	top_style.content_margin_left = 12
-	top_style.content_margin_right = 12
-	top_style.content_margin_top = 8
-	top_style.content_margin_bottom = 8
-	top_bar.add_theme_stylebox_override("panel", top_style)
-	ui_layer.add_child(top_bar)
+	top_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	top_bar.add_theme_stylebox_override("panel", UiThemeHelper.create_hud_bar_style())
+	root.add_child(top_bar)
+	top_bar.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	var content := VBoxContainer.new()
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	content.add_theme_constant_override("separation", 6)
+	top_bar.add_child(content)
+	level_label = UiThemeHelper.label("LEVEL 01", 26, UiThemeHelper.TEAL)
+	content.add_child(level_label)
+	title_label = UiThemeHelper.label("Twin Cascades", 36)
+	content.add_child(title_label)
+	var counters := HBoxContainer.new()
+	counters.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	counters.add_theme_constant_override("separation", 12)
+	content.add_child(counters)
+	progress_label = UiThemeHelper.label("Match colors  0 / 5", 28, UiThemeHelper.MUTED)
+	progress_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	counters.add_child(progress_label)
+	moves_label = UiThemeHelper.label("3 cuts left", 28, UiThemeHelper.GOLD)
+	moves_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	counters.add_child(moves_label)
+	subtitle_label = UiThemeHelper.label("Swipe gold supports · Match ball colors", 26, UiThemeHelper.MUTED)
+	root.add_child(subtitle_label)
+	subtitle_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	bottom_bar = HBoxContainer.new()
+	bottom_bar.add_theme_constant_override("separation", 16)
+	root.add_child(bottom_bar)
+	bottom_bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	pause_btn = UiThemeHelper.action(bottom_bar, "Pause", on_pause)
+	restart_btn = UiThemeHelper.action(bottom_bar, "Restart", on_restart)
+	hint_btn = UiThemeHelper.action(bottom_bar, "Hint", on_hint, true)
+	pause_btn.icon = preload("res://resources/icons/pause.svg")
+	restart_btn.icon = preload("res://resources/icons/restart.svg")
+	hint_btn.icon = preload("res://resources/icons/hint.svg")
+	for button in [pause_btn, restart_btn, hint_btn]:
+		button.expand_icon = true
+		button.add_theme_constant_override("icon_max_width", 32)
 
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 6)
-	top_bar.add_child(vbox)
+func layout(insets: Vector4) -> void:
+	top_bar.offset_left = insets.x + 28
+	top_bar.offset_right = -insets.z - 28
+	top_bar.offset_top = insets.y + 20
+	top_bar.offset_bottom = insets.y + 200
+	bottom_bar.offset_left = insets.x + 28
+	bottom_bar.offset_right = -insets.z - 28
+	bottom_bar.offset_top = -insets.w - 124
+	bottom_bar.offset_bottom = -insets.w - 28
+	subtitle_label.offset_left = insets.x + 28
+	subtitle_label.offset_right = -insets.z - 28
+	subtitle_label.offset_top = -insets.w - 208
+	subtitle_label.offset_bottom = -insets.w - 132
 
-	var row1 := HBoxContainer.new()
-	row1.add_theme_constant_override("separation", 6)
-	vbox.add_child(row1)
+func show_level(index: int, caption: String, daily: bool) -> void:
+	level_label.text = "DAILY CASCADE  /  LEVEL %02d" % index if daily else "LEVEL %02d" % index
+	title_label.text = caption.trim_prefix("Level %d: " % index)
+	subtitle_label.text = "Swipe gold supports · Match ball colors"
 
-	home_btn = UiThemeHelper.create_styled_button("⌂", Color(0.16, 0.22, 0.36), Color(0.50, 0.74, 1.0))
-	home_btn.custom_minimum_size = Vector2(36, 34)
-	home_btn.pressed.connect(on_home)
-	row1.add_child(home_btn)
+func update_moves_display(moves_used: int, par_moves: int) -> void:
+	moves_label.text = "%d cuts left" % maxi(par_moves - moves_used, 0)
+	# Par remains a star target, never a newly introduced hard cut limit.
+	if moves_used > par_moves:
+		moves_label.text = "+%d over par" % (moves_used - par_moves)
 
-	title_label = Label.new()
-	title_label.text = "Level 1"
-	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title_label.clip_text = true
-	title_label.add_theme_font_size_override("font_size", 18)
-	title_label.add_theme_color_override("font_color", Color(0.96, 0.98, 1.0))
-	row1.add_child(title_label)
+func update_progress_display(collected: int, total: int) -> void:
+	progress_label.text = "Match colors  %d / %d" % [collected, total]
 
-	progress_label = Label.new()
-	progress_label.text = "Balls: 0/0"
-	progress_label.add_theme_font_size_override("font_size", 14)
-	progress_label.add_theme_color_override("font_color", Color(0.45, 0.92, 1.0))
-	row1.add_child(progress_label)
-
-	moves_label = Label.new()
-	moves_label.text = "Cuts: 0/1"
-	moves_label.add_theme_font_size_override("font_size", 14)
-	moves_label.add_theme_color_override("font_color", Color(0.98, 0.86, 0.42))
-	row1.add_child(moves_label)
-
-	hint_btn = UiThemeHelper.create_styled_button("Hint", Color(0.28, 0.24, 0.10), Color(1.0, 0.85, 0.28))
-	hint_btn.custom_minimum_size = Vector2(58, 34)
-	hint_btn.pressed.connect(on_hint)
-	row1.add_child(hint_btn)
-
-	restart_btn = UiThemeHelper.create_styled_button("↻", Color(0.18, 0.26, 0.42), Color(0.55, 0.82, 1.0))
-	restart_btn.custom_minimum_size = Vector2(40, 34)
-	restart_btn.pressed.connect(on_restart)
-	row1.add_child(restart_btn)
-
-	pause_btn = UiThemeHelper.create_styled_button("⏸", Color(0.20, 0.22, 0.34), Color(0.68, 0.76, 0.95))
-	pause_btn.custom_minimum_size = Vector2(40, 34)
-	pause_btn.pressed.connect(on_pause)
-	row1.add_child(pause_btn)
-
-	var row2 := HBoxContainer.new()
-	row2.add_theme_constant_override("separation", 6)
-	vbox.add_child(row2)
-
-	subtitle_label = Label.new()
-	subtitle_label.text = "Swipe across supports to drop balls!"
-	subtitle_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	subtitle_label.add_theme_font_size_override("font_size", 12)
-	subtitle_label.add_theme_color_override("font_color", Color(0.74, 0.82, 0.94))
-	subtitle_label.clip_text = true
-	row2.add_child(subtitle_label)
-
-	coins_label = Label.new()
-	coins_label.text = "💰 0"
-	coins_label.add_theme_font_size_override("font_size", 13)
-	coins_label.add_theme_color_override("font_color", Color(1.0, 0.86, 0.28))
-	row2.add_child(coins_label)
-
-	stars_hud_label = Label.new()
-	stars_hud_label.text = "★ 0"
-	stars_hud_label.add_theme_font_size_override("font_size", 13)
-	stars_hud_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.38))
-	row2.add_child(stars_hud_label)
-
-	level_buttons.clear()
-	for i in range(1, 6):
-		var lbtn := UiThemeHelper.create_styled_button(str(i), Color(0.14, 0.18, 0.28), Color(0.45, 0.60, 0.85))
-		lbtn.custom_minimum_size = Vector2(30, 26)
-		var lvl_idx := i
-		lbtn.pressed.connect(func() -> void: on_quick_level.call(lvl_idx))
-		row2.add_child(lbtn)
-		level_buttons.append(lbtn)
-
-	levels_btn = UiThemeHelper.create_styled_button("Levels (100)", Color(0.16, 0.30, 0.46), Color(0.48, 0.86, 1.0))
-	levels_btn.custom_minimum_size = Vector2(96, 26)
-	levels_btn.pressed.connect(on_levels)
-	row2.add_child(levels_btn)
-
-func refresh_counters(save_manager: SaveManager, current_level: LevelController) -> void:
-	if save_manager != null:
-		coins_label.text = "💰 %d" % save_manager.coins
-		stars_hud_label.text = "★ %d" % save_manager.get_total_stars()
-	if current_level != null and is_instance_valid(current_level):
-		moves_label.text = "Cuts: %d/%d" % [current_level.moves_used, current_level.par_moves]
-
-func update_quick_level_buttons(save_manager: SaveManager, current_level_index: int) -> void:
-	for i in range(level_buttons.size()):
-		var btn := level_buttons[i]
-		var lvl_num := i + 1
-		var unlocked := true if save_manager == null else save_manager.is_level_unlocked(lvl_num)
-		var stars := 0 if save_manager == null else save_manager.get_level_stars(lvl_num)
-		var active := lvl_num == current_level_index
-		btn.text = "%d%s" % [lvl_num, "★" if stars > 0 else ""]
-		if active:
-			btn.modulate = Color(1.0, 0.95, 0.45)
-		elif unlocked:
-			btn.modulate = Color(0.84, 0.90, 1.0)
-		else:
-			btn.modulate = Color(0.45, 0.50, 0.62)
+func set_hint_active(active: bool) -> void:
+	hint_btn.text = "Hint on" if active else "Hint"
+	hint_btn.modulate = UiThemeHelper.GOLD if active else Color.WHITE

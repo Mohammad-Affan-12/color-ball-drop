@@ -1,129 +1,78 @@
 class_name LevelSelectModal
 extends RefCounted
 
-## Single-responsibility controller for the 100-Level Chapter Selection Grid modal.
-
 var backdrop: ColorRect
 var panel: PanelContainer
 var chapter_tab_buttons: Array[Button] = []
 var grid_container: GridContainer
 var summary_label: Label
+var chapter_title_label: Label
 var selected_chapter: int = 1
 var _on_select_level: Callable
 var _on_click_sfx: Callable
-
-func build(ui_layer: CanvasLayer, on_select_level: Callable, on_click_sfx: Callable) -> void:
-	_on_select_level = on_select_level
-	_on_click_sfx = on_click_sfx
-
-	backdrop = ColorRect.new()
-	backdrop.color = Color(0.02, 0.04, 0.09, 0.90)
-	backdrop.size = Vector2(UiThemeHelper.BASE_WIDTH, UiThemeHelper.BASE_HEIGHT)
-	backdrop.visible = false
-	ui_layer.add_child(backdrop)
-
-	panel = PanelContainer.new()
-	panel.custom_minimum_size = Vector2(648, 960)
-	panel.position = Vector2(36, 120)
-	panel.add_theme_stylebox_override("panel", UiThemeHelper.create_modal_style(Color(0.42, 0.80, 1.0, 0.94)))
-	backdrop.add_child(panel)
-
-	var vbox := VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 12)
-	panel.add_child(vbox)
-
-	var header := Label.new()
-	header.text = "SELECT LEVEL (1–100)"
-	header.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	header.add_theme_font_size_override("font_size", 26)
-	header.add_theme_color_override("font_color", Color(0.95, 0.98, 1.0))
-	vbox.add_child(header)
-
-	summary_label = Label.new()
-	summary_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	summary_label.add_theme_font_size_override("font_size", 15)
-	summary_label.add_theme_color_override("font_color", Color(1.0, 0.88, 0.36))
-	vbox.add_child(summary_label)
-
-	var tab_row := HBoxContainer.new()
-	tab_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	tab_row.add_theme_constant_override("separation", 6)
-	vbox.add_child(tab_row)
-
-	chapter_tab_buttons.clear()
-	for ch in range(1, 6):
-		var cbtn := UiThemeHelper.create_styled_button("Ch.%d (%d-%d)" % [ch, (ch - 1) * 20 + 1, ch * 20], Color(0.16, 0.22, 0.36), Color(0.48, 0.72, 1.0))
-		cbtn.custom_minimum_size = Vector2(112, 38)
-		var ch_idx := ch
-		cbtn.pressed.connect(func() -> void:
-			_on_click_sfx.call()
-			selected_chapter = ch_idx
-			_rebuild_current_grid()
-		)
-		tab_row.add_child(cbtn)
-		chapter_tab_buttons.append(cbtn)
-
-	grid_container = GridContainer.new()
-	grid_container.columns = 4
-	grid_container.add_theme_constant_override("h_separation", 10)
-	grid_container.add_theme_constant_override("v_separation", 10)
-	grid_container.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	grid_container.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	vbox.add_child(grid_container)
-
-	var close_btn := UiThemeHelper.create_styled_button("Close ✕", Color(0.22, 0.26, 0.38), Color(0.68, 0.80, 0.98))
-	close_btn.custom_minimum_size = Vector2(240, 44)
-	close_btn.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	close_btn.pressed.connect(func() -> void:
-		_on_click_sfx.call()
-		backdrop.visible = false
-	)
-	vbox.add_child(close_btn)
-
-var _cached_save: SaveManager = null
+var _cached_save: SaveManager
 var _cached_current_level: int = 1
 
-func refresh(save_manager: SaveManager, current_level_index: int) -> void:
-	_cached_save = save_manager
-	_cached_current_level = current_level_index
+func build(ui_layer: CanvasLayer, on_select: Callable, on_click: Callable) -> void:
+	_on_select_level = on_select
+	_on_click_sfx = on_click
+	panel = UiThemeHelper.modal(ui_layer, Vector2(664, 1160))
+	backdrop = panel.get_parent()
+	var content := UiThemeHelper.modal_content(panel)
+	content.add_child(UiThemeHelper.label("Choose your cascade", 40))
+	summary_label = UiThemeHelper.label("", 28, UiThemeHelper.GOLD)
+	content.add_child(summary_label)
+	var tabs := HBoxContainer.new()
+	tabs.add_theme_constant_override("separation", 10)
+	content.add_child(tabs)
+	for chapter in range(1, 6):
+		var button := UiThemeHelper.action(tabs, str(chapter), _select_chapter.bind(chapter))
+		button.tooltip_text = "Chapter %d · Levels %d–%d" % [chapter, (chapter - 1) * 20 + 1, chapter * 20]
+		chapter_tab_buttons.append(button)
+	chapter_title_label = UiThemeHelper.label("", 30, UiThemeHelper.TEAL)
+	content.add_child(chapter_title_label)
+	grid_container = GridContainer.new()
+	grid_container.columns = 4
+	grid_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	grid_container.add_theme_constant_override("h_separation", 12)
+	grid_container.add_theme_constant_override("v_separation", 12)
+	content.add_child(grid_container)
+	UiThemeHelper.action(content, "Back to puzzle", _close)
+
+func _close() -> void:
+	_on_click_sfx.call()
+	backdrop.hide()
+
+func _select_chapter(chapter: int) -> void:
+	_on_click_sfx.call()
+	selected_chapter = chapter
+	_rebuild_current_grid()
+
+func refresh(save: SaveManager, current: int) -> void:
+	_cached_save = save
+	_cached_current_level = current
 	_rebuild_current_grid()
 
 func _rebuild_current_grid() -> void:
-	if grid_container == null:
-		return
 	for child in grid_container.get_children():
+		grid_container.remove_child(child)
 		child.queue_free()
+	summary_label.text = "%d / 300 stars   ·   %d coins" % [_cached_save.get_total_stars(), _cached_save.coins]
+	chapter_title_label.text = LevelData.CHAPTER_NAMES[selected_chapter]
+	for i in range(5):
+		chapter_tab_buttons[i].modulate = UiThemeHelper.TEAL if i + 1 == selected_chapter else Color.WHITE
+	for level in range((selected_chapter - 1) * 20 + 1, selected_chapter * 20 + 1):
+		var unlocked := _cached_save.is_level_unlocked(level)
+		var stars := _cached_save.get_level_stars(level)
+		var caption := "%02d\n%s" % [level, "★".repeat(stars) + "☆".repeat(3 - stars) if unlocked else "—"]
+		var button := UiThemeHelper.create_styled_button(caption, UiThemeHelper.SURFACE, UiThemeHelper.TEAL if level == _cached_current_level else Color("405974"), 28)
+		button.custom_minimum_size = Vector2(120, 112)
+		button.disabled = not unlocked
+		button.tooltip_text = "Level %d · %d stars" % [level, stars] if unlocked else "Level %d · Locked" % level
+		button.pressed.connect(_choose.bind(level))
+		grid_container.add_child(button)
 
-	var total_stars: int = _cached_save.get_total_stars() if _cached_save != null else 0
-	var highest: int = _cached_save.highest_unlocked_level if _cached_save != null else 1
-	summary_label.text = "Chapter %d  •  Total Stars: ★ %d / 300  •  Highest Unlocked: Level %d" % [
-		selected_chapter, total_stars, highest
-	]
-
-	for i in range(chapter_tab_buttons.size()):
-		var btn := chapter_tab_buttons[i]
-		btn.modulate = Color(1.0, 0.94, 0.45) if (i + 1) == selected_chapter else Color(0.80, 0.86, 0.96)
-
-	var start_lvl: int = (selected_chapter - 1) * 20 + 1
-	var end_lvl: int = mini(start_lvl + 19, LevelData.TOTAL_LEVELS)
-	for lvl in range(start_lvl, end_lvl + 1):
-		var unlocked: bool = true if _cached_save == null else _cached_save.is_level_unlocked(lvl)
-		var stars: int = 0 if _cached_save == null else _cached_save.get_level_stars(lvl)
-		var star_txt: String = "🔒"
-		if unlocked:
-			star_txt = "★★★" if stars == 3 else ("★★☆" if stars == 2 else ("★☆☆" if stars == 1 else "☆☆☆"))
-		var bg := Color(0.16, 0.28, 0.44) if unlocked else Color(0.11, 0.13, 0.20)
-		var border := Color(0.45, 0.82, 1.0) if unlocked else Color(0.28, 0.32, 0.44)
-		if lvl == _cached_current_level:
-			bg = Color(0.22, 0.42, 0.28)
-			border = Color(0.45, 1.0, 0.65)
-		var cell_btn := UiThemeHelper.create_styled_button("Lvl %d\n%s" % [lvl, star_txt], bg, border)
-		cell_btn.custom_minimum_size = Vector2(136, 110)
-		cell_btn.disabled = not unlocked
-		var target_lvl: int = lvl
-		cell_btn.pressed.connect(func() -> void:
-			_on_click_sfx.call()
-			backdrop.visible = false
-			_on_select_level.call(target_lvl)
-		)
-		grid_container.add_child(cell_btn)
+func _choose(level: int) -> void:
+	_on_click_sfx.call()
+	backdrop.hide()
+	_on_select_level.call(level)
