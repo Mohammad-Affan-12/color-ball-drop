@@ -55,6 +55,7 @@ func _run() -> void:
 	check(rewards[0] == 0, "Unavailable rewarded never grants coins")
 	ads.on_level_completed_break(12, 500, func() -> void: continuations[0] += 1)
 	check(continuations[0] == 1, "Offline next-level callback runs immediately exactly once")
+	_verify_sdk_default_round_trip()
 	# Explicit test doubles; never installed or used by production paths.
 	ads.live_sdk_attached = true
 	ads.ads_enabled = true
@@ -185,3 +186,34 @@ func _run() -> void:
 	await process_frame
 	print("RELEASE SERVICES: %d checks, %d failures" % [checks, failures.size()])
 	quit(0 if failures.is_empty() else 1)
+
+func _verify_sdk_default_round_trip() -> void:
+	var sdk_key := "admob/general/android/enabled"
+	var master_key := "release/ads/enabled"
+	var audience_key := "release/ads/audience_reviewed"
+	var previous_sdk: Variant = ProjectSettings.get_setting(sdk_key)
+	var previous_master: Variant = ProjectSettings.get_setting(master_key)
+	var previous_audience: Variant = ProjectSettings.get_setting(audience_key)
+	ProjectSettings.set_setting(sdk_key, true)
+	ProjectSettings.set_initial_value(sdk_key, true) # Same default as the upstream editor plugin.
+	ProjectSettings.set_setting(master_key, true)
+	ProjectSettings.set_setting(audience_key, true)
+	var fixture := "res://.test-user/sdk-default-roundtrip.godot"
+	check(ProjectSettings.save_custom(fixture) == OK, "Enabled SDK configuration can be serialized")
+	var config := ConfigFile.new()
+	config.load(fixture)
+	check(not config.has_section_key("admob", "general/android/enabled"), "Godot omits SDK enablement when it equals the plugin default")
+	# Simulate runtime after loading the serialized configuration, without editor registration.
+	ProjectSettings.set_setting(sdk_key, null)
+	var service := AdService.new()
+	service.initialize(false, false)
+	check(service.ads_enabled, "Omitted SDK default does not override the explicit enabled master switch")
+	service.free()
+	ProjectSettings.set_setting(master_key, false)
+	service = AdService.new()
+	service.initialize(false, false)
+	check(not service.ads_enabled and not service.live_sdk_attached, "Master switch keeps advertising off even with the SDK default enabled")
+	service.free()
+	ProjectSettings.set_setting(sdk_key, previous_sdk)
+	ProjectSettings.set_setting(master_key, previous_master)
+	ProjectSettings.set_setting(audience_key, previous_audience)

@@ -1,0 +1,18 @@
+{
+    "assessment_date":  "2026-11-17",
+    "service_checks_passed":  43,
+    "development_preflight_blockers":  0,
+    "signing_values_removed_from_tracked_presets":  true,
+    "private_signing_settings_ignored":  true,
+    "signing_helper_success_and_failure_cleanup_tested":  true,
+    "advertising_enabled":  false,
+    "native_ad_registrations":  0,
+    "native_ad_sdk_property_files":  0,
+    "private_signing_or_test_entries":  0,
+    "apk":  "builds/CutAndCascade-no-ads.apk",
+    "apk_bytes":  163962563,
+    "apk_sha256":  "e651a2759d5de1516d4ce1befc05da3510c56064af56c0fc8d7f9af05433ed6d",
+    "apk_signature_verified":  true,
+    "physical_device_tested":  false,
+    "git_history_rewritten":  false
+}

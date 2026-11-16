@@ -14,7 +14,7 @@ func require(condition: bool, message: String) -> void:
 func _run() -> void:
 	var presets := ConfigFile.new()
 	var ads_enabled := bool(ProjectSettings.get_setting("release/ads/enabled", false))
-	var sdk_enabled := bool(ProjectSettings.get_setting("admob/general/android/enabled", false))
+	var sdk_enabled := bool(ProjectSettings.get_setting("admob/general/android/enabled", true))
 	require(ads_enabled == sdk_enabled, "Advertising and native SDK switches must agree")
 	require(presets.load("res://export_presets.cfg") == OK, "Export presets missing")
 	for index in [0, 1]:

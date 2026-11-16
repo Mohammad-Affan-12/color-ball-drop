@@ -53,7 +53,9 @@ func initialize(_legacy_consent: bool, is_ad_free: bool) -> void:
 	remove_ads_owned = is_ad_free
 	# Advertising is explicitly off until the owner integrates it again.
 	# A legacy save or an audience setting cannot silently re-enable it.
-	if not bool(ProjectSettings.get_setting("release/ads/enabled", false)) or not bool(ProjectSettings.get_setting("admob/general/android/enabled", false)):
+	# The SDK defaults to enabled and Godot omits default-valued settings on save.
+	# The separate master switch still defaults to off.
+	if not bool(ProjectSettings.get_setting("release/ads/enabled", false)) or not bool(ProjectSettings.get_setting("admob/general/android/enabled", true)):
 		ads_enabled = false
 		live_sdk_attached = false
 		return
