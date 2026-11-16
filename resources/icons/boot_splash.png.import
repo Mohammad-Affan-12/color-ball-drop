@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ddwwhmrnkfdxe"
-path="res://.godot/imported/gameplay_390x844.png-39bb99d1b9f438fd9456489d2b5831a7.ctex"
+uid="uid://bh5als7jqy5cv"
+path="res://.godot/imported/boot_splash.png-6079b93e1d9aab2fe658fa607073b80d.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://docs/screenshots/gameplay_390x844.png"
-dest_files=["res://.godot/imported/gameplay_390x844.png-39bb99d1b9f438fd9456489d2b5831a7.ctex"]
+source_file="res://resources/icons/boot_splash.png"
+dest_files=["res://.godot/imported/boot_splash.png-6079b93e1d9aab2fe658fa607073b80d.ctex"]
 
 [params]
 

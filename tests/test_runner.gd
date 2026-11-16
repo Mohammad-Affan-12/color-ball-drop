@@ -34,6 +34,10 @@ func _run_tests() -> void:
 	_main_node = main_packed.instantiate()
 	_main_node.save_path = "res://.test-user/regression_save.cfg"
 	root.add_child(_main_node)
+	if _main_node._results_modal.splash_backdrop.visible or _main_node.ad_service.ads_enabled or _main_node.ad_service._initialized:
+		printerr("FAIL: Startup must enter gameplay without a splash or initialized advertising")
+		quit(1)
+		return
 	await process_frame
 	await physics_frame
 

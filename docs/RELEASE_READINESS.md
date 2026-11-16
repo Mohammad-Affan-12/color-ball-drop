@@ -1,5 +1,7 @@
 # Cut & Cascade release-readiness report
 
+> Current update, 2026-11-17: advertising and the native SDK are now disabled at the owner's request, automatic consent/ad calls and the in-game startup splash were removed. See [ADS_DISABLED.md](ADS_DISABLED.md) for the current build. The monetization assessment below records the previous implementation, not active ads in the new APK.
+
 Assessment: 2026-11-16; Godot **4.7.2.stable.official.ed1daf0bf**. **Implemented and locally verified; production launch remains gated by owner configuration and physical-device acceptance.** Nothing was published, no outreach/social content was sent, and no paid service/API/campaign was enabled.
 
 ## Audit and preserved work

@@ -47,6 +47,7 @@ func _run() -> void:
 	var ads := AdService.new()
 	root.add_child(ads)
 	ads.initialize(true, false)
+	check(not ads.ads_enabled and not ads.live_sdk_attached, "Disabled ad configuration never attaches or enables the SDK")
 	check(not ads.consent_granted and not ads.is_rewarded_available(), "Legacy combined consent never authorizes native ads")
 	var rewards := [0]
 	var continuations := [0]

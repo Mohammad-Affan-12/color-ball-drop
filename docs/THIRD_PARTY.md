@@ -7,6 +7,7 @@ Poing Studios Godot AdMob v5.1.0, MIT license retained at `addons/admob/LICENSE`
 - Native release: `android-template-v4.7.2.zip`, SHA-256 `f7fdf644d50c0e231d8f02ae044057e489d0bcafcf50e908a4858477e7ee05ee`.
 - Only `ads` with `ads`/`core` debug/release AARs and package version metadata were installed. No mediation adapter binaries or iOS binaries are installed. The AARs are intentionally versioned; do not restore the upstream `/bin` ignore if expecting clean-checkout builds to work.
 - Native transitive dependency declared by upstream: `com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.4.0`, plus AndroidX constraintlayout 2.2.0. Resolve/audit the full Gradle dependency tree and merged manifest for the actual release; Maven dependencies are fetched free during build, not copied into GDScript.
+- The completed local build resolved `com.google.android.ump:user-messaging-platform:4.0.0` (verified in the project's Gradle dependency cache); consent plugin registrations are present in the merged Android manifest. Final artifact permissions/signature/native checks and hashes are recorded in `docs/android-artifacts.json`.
 
 Two local upstream patches are deliberate: `admob.gd` does not auto-download binaries on editor/headless startup; `MobileSingletonPlugin.gd` returns null on desktop instead of creating simulated ad plugins. Production integration is entirely in `scripts/services/ad_service.gd`. Test doubles exist only under tests. Do not overwrite these patches during an upgrade without reviewing offline behavior and reward correctness.
 

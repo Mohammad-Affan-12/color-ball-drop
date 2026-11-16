@@ -104,7 +104,6 @@ func _ready() -> void:
 
 	current_level_index = clampi(save_manager.highest_unlocked_level, 1, LevelData.TOTAL_LEVELS)
 	load_level(current_level_index)
-	_play_startup_splash()
 
 func _build_ui() -> void:
 	_ui_layer = CanvasLayer.new()
@@ -151,21 +150,7 @@ func _build_ui() -> void:
 		_on_restore_purchases_pressed, _on_reset_progress_pressed, func() -> void: sfx.play("ui_click")
 	)
 	_privacy_modal = PrivacyModal.new()
-	_privacy_modal.build(_ui_layer, _on_analytics_choice_pressed, ad_service.open_privacy_options, _on_language_pressed, func() -> void: sfx.play("ui_click"))
-
-func _play_startup_splash() -> void:
-	var sb := _results_modal.splash_backdrop
-	if sb == null:
-		return
-	sb.visible = true
-	sb.modulate.a = 1.0
-	var tw := create_tween()
-	tw.tween_interval(0.18)
-	tw.tween_property(sb, "modulate:a", 0.0, 0.25)
-	tw.tween_callback(func() -> void:
-		if is_instance_valid(sb):
-			sb.visible = false
-	)
+	_privacy_modal.build(_ui_layer, _on_analytics_choice_pressed, ad_service.open_privacy_options, _on_language_pressed, func() -> void: sfx.play("ui_click"), ad_service.ads_enabled)
 
 func _update_viewport_layout() -> void:
 	var vp_size := get_viewport_rect().size
@@ -299,7 +284,6 @@ func _on_level_won(lvl_idx: int) -> void:
 		analytics.log_event("level_complete", {"level": lvl_idx, "stars": earned_stars, "moves": moves_taken, "coins_awarded": coins_awarded, "duration_seconds": (Time.get_ticks_msec() - _level_started_ms) / 1000.0, "attempt": _attempts.get(lvl_idx, 1), "daily_challenge": is_daily_challenge_mode})
 	_results_modal.show_win(self, lvl_idx, earned_stars, coins_awarded, moves_taken, save_manager)
 	_refresh_reward_availability()
-	ad_service.prepare_at_break()
 
 func _on_level_failed(lvl_idx: int, reason: String) -> void:
 	slice_controller.enabled = false
@@ -351,10 +335,7 @@ func _on_next_level_pressed() -> void:
 	is_daily_challenge_mode = false
 	var go_next := func() -> void:
 		load_level(current_level_index + 1 if current_level_index < LevelData.TOTAL_LEVELS else 1)
-	if ad_service != null:
-		ad_service.on_level_completed_break(current_level_index, Time.get_ticks_msec() / 1000.0, go_next)
-	else:
-		go_next.call()
+	go_next.call()
 
 func toggle_pause() -> void:
 	sfx.play("ui_click")
@@ -375,7 +356,6 @@ func open_home_screen() -> void:
 	_set_paused_state(false)
 	_home_modal.refresh(save_manager)
 	_home_modal.backdrop.visible = true
-	ad_service.prepare_at_break()
 
 func start_daily_challenge() -> void:
 	sfx.play("ui_click")

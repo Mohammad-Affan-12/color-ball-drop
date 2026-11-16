@@ -23,13 +23,13 @@ Full description draft (under 4,000 characters):
 > • Try the Daily Cascade, an offline daily selection from the existing campaign.
 > • Use color symbols alongside colors, adjust sound and vibration, or reduce particles.
 >
-> The game works without an internet connection. Optional bonus-coin ads require internet and an available ad. Interstitial ads may appear between completed levels, never during a puzzle. Watching ads is not required to unlock campaign puzzles, hints or retries.
+> The game works without an internet connection. This version has no in-game ads. Campaign puzzles, hints and retries are free.
 >
 > Progress is stored on your device. Optional analytics is off until you choose to enable it in Settings. Google ad privacy choices are managed separately.
 >
 > Plan the cut. Match the colors. Enjoy the cascade.
 
-The advertising paragraph describes the prepared integration **after** owner configuration and device acceptance; do not imply live ads or full localization have already been approved. Remove the claim about ads if publishing an intentionally SDK-free edition. Choose Games → Puzzle; Free; Contains ads when the final ad-enabled build is submitted. In-app purchases: no active purchase flow in this build. Owner must complete target audience and IARC accurately.
+Current update (2026-11-17): the owner requested an SDK-free, ad-free build and will configure advertising separately later. The description above reflects this version. Do not advertise the future three-per-day setup as active. Choose Games → Puzzle and Free; answer Contains ads against the actual submitted build. Update the description/disclosures if ads are added later. Full localization has not been approved. In-app purchases: no active purchase flow. Owner must complete target audience and IARC accurately.
 
 ## Keyword research candidates
 

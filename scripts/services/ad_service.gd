@@ -51,6 +51,12 @@ var _consent_form: ConsentForm
 
 func initialize(_legacy_consent: bool, is_ad_free: bool) -> void:
 	remove_ads_owned = is_ad_free
+	# Advertising is explicitly off until the owner integrates it again.
+	# A legacy save or an audience setting cannot silently re-enable it.
+	if not bool(ProjectSettings.get_setting("release/ads/enabled", false)) or not bool(ProjectSettings.get_setting("admob/general/android/enabled", false)):
+		ads_enabled = false
+		live_sdk_attached = false
+		return
 	live_sdk_attached = OS.get_name() == "Android" and Engine.has_singleton("PoingGodotAdMob") and Engine.has_singleton("PoingGodotAdMobUserMessagingPlatform") and Engine.has_singleton("PoingGodotAdMobConsentInformation")
 	_last_interstitial_time = Time.get_ticks_msec() / 1000.0
 	ads_enabled = bool(ProjectSettings.get_setting("release/ads/audience_reviewed", false))

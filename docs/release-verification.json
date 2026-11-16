@@ -1,0 +1,23 @@
+{
+    "assessment_date":  "2026-11-16",
+    "engine":  "4.7.2.stable.official.ed1daf0bf",
+    "campaign_levels_passed":  100,
+    "component_scenes_passed":  15,
+    "service_checks_passed":  38,
+    "responsive_layout_checks_passed":  39126,
+    "development_preflight_blockers":  0,
+    "expected_production_configuration_blockers":  7,
+    "android_artifact_audit":  "docs/android-artifacts.json",
+    "performance_sample":  "docs/performance-desktop.json",
+    "physical_device_tested":  false,
+    "live_ads_tested":  false,
+    "remote_analytics_configured":  false,
+    "production_published":  false,
+    "paid_services_activated":  false,
+    "ad_service_sha256":  "60dcab9dd5097e30b38485085dac01f50938ca87b60400ce19d6585826913830",
+    "parallel_reviews":  [
+                             "runtime service lifecycle and privacy",
+                             "marketing asset provenance and copy",
+                             "native Android artifact integrity"
+                         ]
+}

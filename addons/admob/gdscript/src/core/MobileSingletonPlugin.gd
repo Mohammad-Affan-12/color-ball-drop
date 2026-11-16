@@ -24,6 +24,8 @@ class_name MobileSingletonPlugin
 
 
 static func _get_plugin(plugin_name: String, is_required := true) -> Object:
+	if OS.get_name() == "Android" and not bool(ProjectSettings.get_setting("admob/general/android/enabled", true)):
+		return null # Intentional SDK-free build; missing native plugins are expected.
 	if Engine.has_singleton(plugin_name):
 		return Engine.get_singleton(plugin_name)
 
