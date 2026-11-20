@@ -9,11 +9,15 @@ signal cut_performed(item: CuttableBase, world_cut_point: Vector2)
 var is_cut: bool = false
 var show_hint: bool = false
 var _hint_pulse: float = 0.0
+var _redraw_accum: float = 0.0
 
 func _process(delta: float) -> void:
 	_hint_pulse += delta * 4.0
 	if not is_cut:
-		queue_redraw()
+		_redraw_accum += delta
+		if _redraw_accum >= 0.066:
+			_redraw_accum = 0.0
+			queue_redraw()
 
 ## Returns the intersection point in global coordinates if segment (world_a, world_b) cuts this object,
 ## or Vector2.INF if no intersection.

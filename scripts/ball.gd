@@ -18,7 +18,7 @@ var is_heavy_striker: bool = false
 var show_color_symbol := true
 var _trail_points: Array[Vector2] = []
 var _dye_flash: float = 0.0
-const MAX_TRAIL_POINTS := 9
+const MAX_TRAIL_POINTS := 5
 
 var _collision_shape: CollisionShape2D
 
@@ -103,11 +103,11 @@ func _draw() -> void:
 		draw_circle(to_local(_trail_points[i]), radius * fade * 0.7, Color(main, fade * 0.18))
 	draw_circle(Vector2(1, 4).rotated(-rotation), radius + 1, Color(0, 0, 0, 0.32))
 	draw_circle(Vector2.ZERO, radius, light.lerp(dark, 0.55))
-	# Small layered discs create a soft enamel gradient without textures.
-	for step in range(10):
-		var t := float(step) / 9.0
+	# Compact 3-layer enamel shading keeps mobile GPU draw cost low.
+	for step in range(3):
+		var t := float(step) / 2.0
 		draw_circle(Vector2(-1, -2).rotated(-rotation) * t, (radius - 1.4) * (1.0 - t * 0.42), main.lerp(light, t * 0.55))
-	draw_arc(Vector2.ZERO, radius - 2, PI * 1.08 - rotation, PI * 1.8 - rotation, 20, Color(light, 0.8), 1.5, true)
+	draw_arc(Vector2.ZERO, radius - 2, PI * 1.08 - rotation, PI * 1.8 - rotation, 12, Color(light, 0.8), 1.5, true)
 	if show_color_symbol:
 		GameColors.draw_color_emblem(self, Vector2(0, 1), radius * 0.9, color_type, Color(dark.darkened(0.25), 0.9))
 	draw_circle(Vector2(-radius * 0.3, -radius * 0.4).rotated(-rotation), radius * 0.18, Color(1, 1, 1, 0.88))

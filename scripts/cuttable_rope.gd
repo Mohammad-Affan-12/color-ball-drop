@@ -86,8 +86,10 @@ func _process(delta: float) -> void:
 	super._process(delta)
 	if not is_cut:
 		if attached_body != null and is_instance_valid(attached_body):
-			attached_body.global_position = global_position + rope_offset
-		queue_redraw()
+			var target_pos := global_position + rope_offset
+			if attached_body.global_position.distance_squared_to(target_pos) > 0.25:
+				attached_body.global_position = target_pos
+				queue_redraw()
 	elif _recoil_t < 1.0:
 		_recoil_t = minf(_recoil_t + delta * 2.8, 1.0)
 		queue_redraw()

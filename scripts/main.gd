@@ -104,6 +104,15 @@ func _ready() -> void:
 
 	current_level_index = clampi(save_manager.highest_unlocked_level, 1, LevelData.TOTAL_LEVELS)
 	load_level(current_level_index)
+	_show_launch_home()
+
+## Every app launch opens on the home screen (Play / Levels / Settings).
+## The current level is prepared behind it while the tree is paused by the menu.
+func _show_launch_home() -> void:
+	_home_modal.set_launch_mode(true)
+	_home_modal.refresh(save_manager)
+	_home_modal.backdrop.visible = true
+	_sync_menu_state()
 
 func _build_ui() -> void:
 	_ui_layer = CanvasLayer.new()
@@ -354,6 +363,7 @@ func _set_paused_state(paused: bool) -> void:
 func open_home_screen() -> void:
 	sfx.play("ui_click")
 	_set_paused_state(false)
+	_home_modal.set_launch_mode(false)
 	_home_modal.refresh(save_manager)
 	_home_modal.backdrop.visible = true
 
@@ -514,8 +524,30 @@ func _sync_menu_state() -> void:
 	get_tree().paused = menu_open or _is_paused or _external_presentation
 	slice_controller.enabled = not menu_open and not _is_paused and not _external_presentation and not _results_modal.backdrop.visible
 
+## Android back button: close the top-most screen, return to home, and only
+## leave the app from the home screen (quit_on_go_back is disabled in project settings).
+func _on_android_back() -> void:
+	if _external_presentation:
+		return
+	if _privacy_modal.backdrop.visible:
+		_privacy_modal.backdrop.hide()
+	elif _level_select_modal.backdrop.visible or _cosmetics_modal.backdrop.visible or _settings_modal.backdrop.visible:
+		for modal in [_level_select_modal, _cosmetics_modal, _settings_modal]:
+			modal.backdrop.hide()
+		open_home_screen()
+	elif _home_modal.backdrop.visible:
+		if save_manager != null:
+			save_manager.save_data()
+		get_tree().quit()
+	elif _is_paused:
+		_set_paused_state(false)
+	else:
+		open_home_screen()
+
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_PAUSED and save_manager != null:
+	if what == NOTIFICATION_WM_GO_BACK_REQUEST:
+		_on_android_back()
+	elif what == NOTIFICATION_APPLICATION_PAUSED and save_manager != null:
 		save_manager.save_data()
 		if current_level != null and not current_level.is_finished and not _external_presentation:
 			_set_paused_state(true)
@@ -531,6 +563,6 @@ func _draw() -> void:
 	plate.set_border_width_all(1)
 	plate.set_corner_radius_all(30)
 	draw_style_box(plate, _puzzle_bounds)
-	for x in range(60, 700, 40):
-		for y in range(int(_puzzle_bounds.position.y) + 24, int(_puzzle_bounds.end.y) - 20, 40):
-			draw_circle(Vector2(x, y), 1.2, Color(0.42, 0.58, 0.68, 0.1))
+	for x in range(60, 700, 64):
+		for y in range(int(_puzzle_bounds.position.y) + 24, int(_puzzle_bounds.end.y) - 20, 64):
+			draw_rect(Rect2(x - 1.0, y - 1.0, 2.0, 2.0), Color(0.42, 0.58, 0.68, 0.12))

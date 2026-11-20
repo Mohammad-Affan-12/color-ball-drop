@@ -1,7 +1,11 @@
 class_name SfxManager
 extends Node
 
-const SAMPLE_RATE := 22050
+const SAMPLE_RATE := 16000
+const MUSIC_SAMPLE_RATE := 11025
+# Extra guard samples prevent Godot's AudioStreamWAV resampler from reading
+# past the end of the PCM buffer on strict allocators (e.g., Android Scudo).
+const GUARD_SAMPLES := 16
 
 var muted: bool = false:
 	set(value):
@@ -81,7 +85,7 @@ func _build_streams() -> void:
 	_streams["star"] = _make_tone_sweep(784.0, 1174.66, 0.15, 0.38, false)
 	_streams["win"] = _make_chord([523.25, 659.25, 783.99, 1046.5], 0.48, 0.42)
 	_streams["fail"] = _make_tone_sweep(260.0, 110.0, 0.35, 0.45, false)
-	_streams["music_loop"] = _make_ambient_loop(3.2, 0.22)
+	_streams["music_loop"] = _make_ambient_loop(1.6, 0.22)
 
 func play(sound_name: String, pitch_scale: float = 1.0) -> void:
 	if muted or volume_percent <= 0:
@@ -103,7 +107,7 @@ func play(sound_name: String, pitch_scale: float = 1.0) -> void:
 func _make_tone_sweep(f_start: float, f_end: float, duration: float, amp: float, add_noise: bool) -> AudioStreamWAV:
 	var count := int(SAMPLE_RATE * duration)
 	var data := PackedByteArray()
-	data.resize(count * 2)
+	data.resize((count + GUARD_SAMPLES) * 2)
 	var phase := 0.0
 	for i in range(count):
 		var t := float(i) / float(max(count - 1, 1))
@@ -125,7 +129,7 @@ func _make_tone_sweep(f_start: float, f_end: float, duration: float, amp: float,
 func _make_chord(freqs: Array, duration: float, amp: float) -> AudioStreamWAV:
 	var count := int(SAMPLE_RATE * duration)
 	var data := PackedByteArray()
-	data.resize(count * 2)
+	data.resize((count + GUARD_SAMPLES) * 2)
 	for i in range(count):
 		var t := float(i) / float(max(count - 1, 1))
 		var env := (1.0 - t) * minf(t * 12.0, 1.0)
@@ -146,25 +150,30 @@ func _make_chord(freqs: Array, duration: float, amp: float) -> AudioStreamWAV:
 	return wav
 
 func _make_ambient_loop(duration: float, amp: float) -> AudioStreamWAV:
-	var count := int(SAMPLE_RATE * duration)
+	var count := int(MUSIC_SAMPLE_RATE * duration)
 	var data := PackedByteArray()
-	data.resize(count * 2)
-	var notes := [261.63, 329.63, 392.00, 493.88]
+	data.resize((count + GUARD_SAMPLES) * 2)
+	var inv_rate := 1.0 / float(MUSIC_SAMPLE_RATE)
+	var w0 := TAU * 261.63 * inv_rate
+	var w1 := TAU * 329.63 * inv_rate
+	var w2 := TAU * 392.00 * inv_rate
+	var w3 := TAU * 493.88 * inv_rate
+	var lfo_step := TAU / float(count)
+	var scale_amp := amp * 0.25 * 32767.0
 	for i in range(count):
-		var sec := float(i) / float(SAMPLE_RATE)
-		var lfo := 0.75 + 0.25 * sin(TAU * sec / duration)
-		var sum := 0.0
-		for f in notes:
-			sum += sin(TAU * float(f) * sec)
-		sum /= float(notes.size())
-		var val := int(clampf(sum * lfo * amp, -1.0, 1.0) * 32767.0)
+		var fi := float(i)
+		var lfo := 0.75 + 0.25 * sin(fi * lfo_step)
+		var sum := sin(w0 * fi) + sin(w1 * fi) + sin(w2 * fi) + sin(w3 * fi)
+		var val := clampi(int(sum * lfo * scale_amp), -32767, 32767)
 		data.encode_s16(i * 2, val)
+	for g in range(GUARD_SAMPLES):
+		data.encode_s16((count + g) * 2, data.decode_s16(g * 2))
 	var wav := AudioStreamWAV.new()
 	wav.format = AudioStreamWAV.FORMAT_16_BITS
-	wav.mix_rate = SAMPLE_RATE
+	wav.mix_rate = MUSIC_SAMPLE_RATE
 	wav.stereo = false
+	wav.data = data
 	wav.loop_mode = AudioStreamWAV.LOOP_FORWARD
 	wav.loop_begin = 0
-	wav.loop_end = count
-	wav.data = data
+	wav.loop_end = count - 1
 	return wav
