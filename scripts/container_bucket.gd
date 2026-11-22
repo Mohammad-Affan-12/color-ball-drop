@@ -169,27 +169,29 @@ func _draw() -> void:
 	var hw := bucket_width * 0.5
 	var hh := bucket_height * 0.5
 	var shell := StyleBoxFlat.new()
-	shell.bg_color = Color("172b40")
-	shell.set_corner_radius_all(14)
-	shell.shadow_color = Color(0, 0, 0, 0.25)
-	shell.shadow_size = 5
+	shell.bg_color = Color("132642")
+	shell.border_color = Color(main.r, main.g, main.b, 0.35)
+	shell.set_border_width_all(1)
+	shell.set_corner_radius_all(16)
+	shell.shadow_color = Color(0, 0, 0, 0.32)
+	shell.shadow_size = 7
 	draw_style_box(shell, Rect2(-hw - 6, -hh, bucket_width + 12, bucket_height + 10))
 	if _display_fill > 0.01:
 		var height := (bucket_height - 8) * _display_fill
-		draw_rect(Rect2(-hw + 7, hh - height, bucket_width - 14, height), Color(main, 0.23))
-		draw_line(Vector2(-hw + 7, hh - height), Vector2(hw - 7, hh - height), Color(light, 0.75), 2, true)
+		draw_rect(Rect2(-hw + 7, hh - height, bucket_width - 14, height), Color(main, 0.28))
+		draw_line(Vector2(-hw + 7, hh - height), Vector2(hw - 7, hh - height), Color(light, 0.85), 2.5, true)
 	var rim := PackedVector2Array([
 		Vector2(-hw - 12, -hh - 12), Vector2(-hw, -hh),
 		Vector2(-hw, hh), Vector2(hw, hh), Vector2(hw, -hh), Vector2(hw + 12, -hh - 12)])
-	draw_polyline(rim, Color("2e4358"), 12, true)
-	draw_polyline(rim, main, 6, true)
-	draw_line(Vector2(-hw + 9, -hh + 10), Vector2(-hw + 9, hh - 10), Color(1, 1, 1, 0.12), 3, true)
+	draw_polyline(rim, Color("294163"), 13, true)
+	draw_polyline(rim, main, 6.5, true)
+	draw_line(Vector2(-hw + 9, -hh + 10), Vector2(-hw + 9, hh - 10), Color(1, 1, 1, 0.16), 3, true)
 	var arrow := Vector2(0, -hh - 14)
-	draw_polyline(PackedVector2Array([arrow + Vector2(-7, -5), arrow, arrow + Vector2(7, -5)]), light, 2, true)
+	draw_polyline(PackedVector2Array([arrow + Vector2(-7, -5), arrow, arrow + Vector2(7, -5)]), light, 2.2, true)
 	var font := ThemeDB.fallback_font
-	draw_string(font, Vector2(-hw, 10), "%d / %d" % [collected_count, required_count], HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 32, UiThemeHelper.TEXT)
 	if not is_satisfied() and show_color_symbol:
-		GameColors.draw_color_emblem(self, Vector2(0, -23), 19, color_type, light)
-	draw_string(font, Vector2(-hw, hh + 39), GameColors.get_color_name(color_type), HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 28, light)
-	if is_satisfied():
-		draw_polyline(PackedVector2Array([Vector2(-8, -20), Vector2(-2, -14), Vector2(10, -28)]), UiThemeHelper.TEAL, 3, true)
+		GameColors.draw_color_emblem(self, Vector2(0, -24), 15, color_type, light)
+	elif is_satisfied():
+		draw_polyline(PackedVector2Array([Vector2(-9, -22), Vector2(-2, -15), Vector2(11, -30)]), UiThemeHelper.TEAL, 3.5, true)
+	draw_string(font, Vector2(-hw, 20), "%d / %d" % [collected_count, required_count], HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 30, UiThemeHelper.TEXT)
+	draw_string(font, Vector2(-hw, hh + 38), GameColors.get_color_name(color_type), HORIZONTAL_ALIGNMENT_CENTER, bucket_width, 26, light)

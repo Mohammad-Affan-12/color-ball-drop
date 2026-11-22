@@ -11,8 +11,8 @@ func build(ui_layer: CanvasLayer, on_resume: Callable, on_sfx: Callable, on_musi
 	panel = UiThemeHelper.modal(ui_layer, Vector2(600, 1040))
 	backdrop = panel.get_parent()
 	var content := UiThemeHelper.modal_content(panel)
-	content.add_child(UiThemeHelper.label("Take a breath", 44))
-	content.add_child(UiThemeHelper.label("Your cascade can wait.", 28, UiThemeHelper.MUTED))
+	content.add_child(UiThemeHelper.label("Paused", 42, UiThemeHelper.TEXT))
+	content.add_child(UiThemeHelper.label("Your progress is saved.", 26, UiThemeHelper.MUTED))
 	UiThemeHelper.action(content, "Resume", on_resume, true)
 	UiThemeHelper.action(content, "Restart level", on_restart)
 	if on_levels.is_valid():

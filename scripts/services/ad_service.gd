@@ -15,6 +15,7 @@ const TEST_INTERSTITIAL := "ca-app-pub-3940256099942544/1033173712"
 const MIN_LEVEL_FOR_INTERSTITIAL := 11
 const MIN_LEVELS_BETWEEN_INTERSTITIALS := 3
 const MIN_SECONDS_BETWEEN_INTERSTITIALS := 180.0
+const MAX_INTERSTITIALS_PER_DAY := 3
 const INVENTORY_TTL_MS := 3300000
 
 var consent_granted := false # Only fresh UMP state can change this.
@@ -29,6 +30,8 @@ var _presenting := false
 var _presentation_token := 0
 var _levels_since_last_interstitial := 0
 var _last_interstitial_time := 0.0
+var _interstitials_shown_today := 0
+var _interstitial_day_key := ""
 var _completed_breaks: Dictionary = {}
 var _rewarded: RewardedAd
 var _interstitial: InterstitialAd
@@ -254,8 +257,19 @@ func show_rewarded_ad(placement: String, on_reward_earned: Callable, on_unavaila
 		_reward_callback.call()
 	_rewarded.show(_reward_listener)
 
+func _sync_daily_cap() -> void:
+	var today := DailyChallenge.get_today_date_string()
+	if _interstitial_day_key != today:
+		_interstitial_day_key = today
+		_interstitials_shown_today = 0
+
+func get_daily_interstitials_remaining() -> int:
+	_sync_daily_cap()
+	return maxi(MAX_INTERSTITIALS_PER_DAY - _interstitials_shown_today, 0)
+
 func can_show_interstitial(completed_level_idx: int, current_time_sec: float) -> bool:
-	return live_sdk_attached and consent_granted and ads_enabled and not remove_ads_owned and not _presenting and _interstitial != null and completed_level_idx >= MIN_LEVEL_FOR_INTERSTITIAL and _levels_since_last_interstitial >= MIN_LEVELS_BETWEEN_INTERSTITIALS and current_time_sec - _last_interstitial_time >= MIN_SECONDS_BETWEEN_INTERSTITIALS and Time.get_ticks_msec() - _interstitial_loaded_ms < INVENTORY_TTL_MS
+	_sync_daily_cap()
+	return live_sdk_attached and consent_granted and ads_enabled and not remove_ads_owned and not _presenting and _interstitial != null and _interstitials_shown_today < MAX_INTERSTITIALS_PER_DAY and completed_level_idx >= MIN_LEVEL_FOR_INTERSTITIAL and _levels_since_last_interstitial >= MIN_LEVELS_BETWEEN_INTERSTITIALS and current_time_sec - _last_interstitial_time >= MIN_SECONDS_BETWEEN_INTERSTITIALS and Time.get_ticks_msec() - _interstitial_loaded_ms < INVENTORY_TTL_MS
 
 func on_level_completed_break(completed_level_idx: int, current_time_sec: float, on_continue: Callable) -> bool:
 	if not _completed_breaks.has(completed_level_idx):
@@ -268,6 +282,7 @@ func on_level_completed_break(completed_level_idx: int, current_time_sec: float,
 		_interstitial.on_ad_paid = _paid_callback("interstitial", "next_level")
 		_levels_since_last_interstitial = 0
 		_last_interstitial_time = current_time_sec
+		_interstitials_shown_today += 1
 		_interstitial.show()
 		return true
 	if on_continue.is_valid():

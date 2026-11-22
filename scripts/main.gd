@@ -156,7 +156,7 @@ func _build_ui() -> void:
 	_settings_modal = SettingsModal.new()
 	_settings_modal.build(_ui_layer, APP_VERSION, _on_toggle_sfx_pressed, _on_toggle_music_pressed, _on_toggle_haptics_pressed,
 		_on_toggle_colorblind_pressed, _on_toggle_particles_pressed, _on_toggle_consent_pressed,
-		_on_restore_purchases_pressed, _on_reset_progress_pressed, func() -> void: sfx.play("ui_click")
+		_on_restore_purchases_pressed, _on_reset_progress_pressed, func() -> void: sfx.play("ui_click"), _on_language_pressed
 	)
 	_privacy_modal = PrivacyModal.new()
 	_privacy_modal.build(_ui_layer, _on_analytics_choice_pressed, ad_service.open_privacy_options, _on_language_pressed, func() -> void: sfx.play("ui_click"), ad_service.ads_enabled)
@@ -489,6 +489,7 @@ func _on_language_pressed() -> void:
 	save_manager.save_data()
 	TranslationServer.set_locale(save_manager.locale_override)
 	_privacy_modal.refresh(save_manager)
+	_settings_modal.refresh(sfx, slice_controller, save_manager)
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
@@ -555,14 +556,18 @@ func _notification(what: int) -> void:
 		analytics.log_event("session_resume")
 
 func _draw() -> void:
-	# Static, quiet background keeps attention on the moving cascade.
-	draw_rect(Rect2(-2000, -2000, 5000, 5000), Color("0b1626"))
+	# Deep midnight-indigo playfield backdrop with layered frame depth.
+	draw_rect(Rect2(-2000, -2000, 5000, 5000), UiThemeHelper.BG_DEEP)
 	var plate := StyleBoxFlat.new()
-	plate.bg_color = Color("101f32")
-	plate.border_color = Color("22394f")
-	plate.set_border_width_all(1)
-	plate.set_corner_radius_all(30)
+	plate.bg_color = Color("0e1c33")
+	plate.border_color = Color("26416b")
+	plate.set_border_width_all(2)
+	plate.set_corner_radius_all(32)
+	plate.shadow_color = Color(0.0, 0.0, 0.0, 0.35)
+	plate.shadow_size = 16
 	draw_style_box(plate, _puzzle_bounds)
+	var inner_glow := Rect2(_puzzle_bounds.position + Vector2(10, 10), _puzzle_bounds.size - Vector2(20, 20))
+	draw_rect(inner_glow, Color(0.24, 0.52, 0.88, 0.04), true)
 	for x in range(60, 700, 64):
 		for y in range(int(_puzzle_bounds.position.y) + 24, int(_puzzle_bounds.end.y) - 20, 64):
-			draw_rect(Rect2(x - 1.0, y - 1.0, 2.0, 2.0), Color(0.42, 0.58, 0.68, 0.12))
+			draw_rect(Rect2(x - 1.0, y - 1.0, 2.5, 2.5), Color(0.45, 0.65, 0.88, 0.14))
