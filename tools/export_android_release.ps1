@@ -1,6 +1,6 @@
 param(
     [string]$Godot = 'D:/Godot_v4.7.2-stable_win64_console.exe',
-    [string]$OutputPath = 'builds/CutAndCascade-release.aab'
+    [string]$OutputPath = 'builds/ColorBallDrop-release.aab'
 )
 $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))

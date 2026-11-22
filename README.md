@@ -1,4 +1,4 @@
-# Cut & Cascade
+# Color Ball Drop: Rope Puzzle
 
 Existing Godot 4.7.2 offline physics puzzle game: 100 levels, five chapters, free hints/retries, stars, cosmetic trails and a daily campaign selection.
 

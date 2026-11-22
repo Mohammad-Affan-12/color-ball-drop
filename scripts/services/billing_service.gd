@@ -9,7 +9,7 @@ signal purchase_failed(product_key: String, reason: String)
 signal purchases_restored(restored_keys: Array[String])
 
 const VALID_SKUS := {
-	"remove_ads": "com.cutandcascade.puzzle.remove_ads"
+	"remove_ads": "com.colorballdrop.ropepuzzle.remove_ads"
 }
 
 var save_manager: SaveManager = null

@@ -38,7 +38,7 @@ func build(ui_layer: CanvasLayer, on_retry: Callable, on_next: Callable, on_bonu
 	ui_layer.add_child(splash_backdrop)
 	splash_backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	splash_backdrop.hide()
-	var title := UiThemeHelper.label("CUT &\nCASCADE", 64, UiThemeHelper.TEAL)
+	var title := UiThemeHelper.label("COLOR BALL\nDROP", 60, UiThemeHelper.TEAL)
 	splash_backdrop.add_child(title)
 	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	title.vertical_alignment = VERTICAL_ALIGNMENT_CENTER

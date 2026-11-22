@@ -7,10 +7,10 @@ class FeatureArt extends Node2D:
 		draw_rect(Rect2(645, 28, 330, 444), Color("20374b"))
 		draw_texture_rect(game_texture, Rect2(682, 32, 249, 442), false)
 		var font := ThemeDB.fallback_font
-		draw_string(font, Vector2(58, 137), "CUT &", HORIZONTAL_ALIGNMENT_LEFT, -1, 76, Color("72e7cd"))
-		draw_string(font, Vector2(58, 220), "CASCADE", HORIZONTAL_ALIGNMENT_LEFT, -1, 76, Color("eef6ff"))
+		draw_string(font, Vector2(58, 137), "COLOR BALL", HORIZONTAL_ALIGNMENT_LEFT, -1, 70, Color("72e7cd"))
+		draw_string(font, Vector2(58, 220), "DROP", HORIZONTAL_ALIGNMENT_LEFT, -1, 76, Color("eef6ff"))
 		draw_line(Vector2(60, 262), Vector2(560, 262), Color("ffd482"), 5)
-		draw_string(font, Vector2(60, 325), "A little cut. A colorful cascade.", HORIZONTAL_ALIGNMENT_LEFT, -1, 29, Color("adbed1"))
+		draw_string(font, Vector2(60, 325), "Cut ropes. Drop balls. Match colors.", HORIZONTAL_ALIGNMENT_LEFT, -1, 27, Color("adbed1"))
 		draw_string(font, Vector2(60, 385), "100 physics puzzles", HORIZONTAL_ALIGNMENT_LEFT, -1, 28, Color("eef6ff"))
 
 func _init() -> void:
